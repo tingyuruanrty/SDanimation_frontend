@@ -193,31 +193,36 @@
 			toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
 		}
 
-		//
+		// file input visual effects and drag-and-drop support
 		function connectFileInput(inputId, resultId) {
-			// character-file
+			// character-file input element
 			const input = document.getElementById(inputId);
-			// character-result
+			// character-result div element
 			const result = document.getElementById(resultId);
-			// first bold element in character-result element
+			// first bold element in character-result div element
 			const name = result.querySelector('b');
 			// element.addEventListener(event, function, useCaptureOrOptions);
 			// call function when event happens
+			// when there's a input file, apply style to the result div and show the file name in the bold element
 			input.addEventListener('change', () => {
 				if (!input.files.length) return;
 				name.textContent = input.files[0].name;
 				result.classList.add('visible');
 			});
+			// result div has a button element, when the button is clicked, clear the input file and remove the style from the result div
 			result.querySelector('button').addEventListener('click', () => {
 				input.value = '';
 				result.classList.remove('visible');
 			});
+			// parent element label of input element
 			const label = input.closest('label');
+			// apply style to the label element when the user drags a file over it, and remove the style when the user drags a file out of it or drops a file on it
 			['dragenter', 'dragover'].forEach(eventName => label.addEventListener(eventName, event => { event.preventDefault(); label.classList.add('dragging'); }));
 			['dragleave', 'drop'].forEach(eventName => label.addEventListener(eventName, event => { event.preventDefault(); label.classList.remove('dragging'); }));
 			label.addEventListener('drop', event => {
 				if (!event.dataTransfer.files.length) return;
 				input.files = event.dataTransfer.files;
+				// label giving off event
 				input.dispatchEvent(new Event('change'));
 			});
 		}
