@@ -156,7 +156,7 @@
 
 				<div class="section-heading motion"><h2>Movement reference</h2><div class="step">03 / 03</div></div>
 				<label class="upload-box motion-upload" for="motion-file">
-					<div class="upload-icon">&#9654;</div><div><strong>Upload a GIF or video</strong><small>MP4, MOV, WEBM or GIF. The motion will guide your frame timing and poses.</small></div>
+					<div class="upload-icon">&#9654;</div><div><strong>Upload a GIF or video</strong><small> MP4, MOV, WEBM or GIF. The motion will guide your frame timing and poses.</small></div>
 					<input id="motion-file" type="file" accept="video/mp4,video/quicktime,video/webm,image/gif">
 				</label>
 				<div class="file-result" id="motion-result"><span>Motion</span><b></b><button type="button" aria-label="Remove movement file">x</button></div>
@@ -181,8 +181,11 @@
 	</main>
 	<div class="toast" id="toast" role="status"></div>
 	<script>
+		// toast has the reference to the document object who has an id of toast
 		const toast = document.getElementById('toast');
+		// declare variable
 		let toastTimer;
+		// show notification message for 3.2 seconds, then invisible it
 		function showToast(message) {
 			toast.textContent = message;
 			toast.classList.add('visible');
@@ -190,10 +193,16 @@
 			toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
 		}
 
+		//
 		function connectFileInput(inputId, resultId) {
+			// character-file
 			const input = document.getElementById(inputId);
+			// character-result
 			const result = document.getElementById(resultId);
+			// first bold element in character-result element
 			const name = result.querySelector('b');
+			// element.addEventListener(event, function, useCaptureOrOptions);
+			// call function when event happens
 			input.addEventListener('change', () => {
 				if (!input.files.length) return;
 				name.textContent = input.files[0].name;
@@ -216,16 +225,60 @@
 		connectFileInput('lora-file', 'lora-result');
 		connectFileInput('motion-file', 'motion-result');
 
-		document.getElementById('generator-form').addEventListener('submit', event => {
-			event.preventDefault();
-			const prompt = document.getElementById('prompt').value.trim();
-			if (!prompt) {
-				showToast('Add a positive prompt to start your spritesheet.');
-				document.getElementById('prompt').focus();
-				return;
-			}
-			showToast('Generation setup saved. Your spritesheet is ready to render.');
-		});
+		//document.getElementById('generator-form').addEventListener('submit', event => {
+		//	event.preventDefault();
+		//	const prompt = document.getElementById('prompt').value.trim();
+		//	if (!prompt) {
+		//		showToast('Add a positive prompt to start your spritesheet.');
+		//		document.getElementById('prompt').focus();
+		//		return;
+		//	}
+		//	showToast('Generation setup saved. Your spritesheet is ready to render.');
+		//});
+
+		document.getElementById('generator-form').addEventListener('submit', async event => {
+				event.preventDefault();
+
+				const prompt = document.getElementById('prompt').value.trim();
+				const negativePrompt = document.getElementById('negative-prompt').value.trim();
+				const charFile = document.getElementById('character-file').files[0];
+				const loraFile = document.getElementById('lora-file').files[0];
+				const motionFile = document.getElementById('motion-file').files[0];
+
+				if (!prompt) {
+					showToast('Add a positive prompt to start your spritesheet.');
+					document.getElementById('prompt').focus();
+					return;
+				}
+
+				// 1. Pack all text and files into a FormData container
+				const payload = new FormData();
+				payload.append('prompt', prompt);
+				payload.append('negative_prompt', negativePrompt);
+				if (charFile) payload.append('character_image', charFile);
+				if (loraFile) payload.append('lora_file', loraFile);
+				if (motionFile) payload.append('motion_video', motionFile);
+
+				showToast('Uploading assets and generating spritesheet...');
+
+				try {
+					// Note: Do NOT manually set a "Content-Type" header when using FormData;
+					// the browser automatically sets multipart boundaries.
+					const response = await fetch('http://127.0.0.1:8000/api/generate', {
+						method: 'POST',
+						body: payload
+					});
+
+					if (!response.ok) throw new Error(`Server returned ${response.status}`);
+
+					const result = await response.json();
+					showToast('Spritesheet ready!');
+					console.log('Result:', result);
+				} catch (err) {
+					showToast('Generation failed. Check server connection.');
+					console.error(err);
+				}
+			});
 	</script>
 </body>
 </html>
