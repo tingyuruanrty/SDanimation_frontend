@@ -230,6 +230,7 @@
 		connectFileInput('lora-file', 'lora-result');
 		connectFileInput('motion-file', 'motion-result');
 
+		// form give submit event, 
 		//document.getElementById('generator-form').addEventListener('submit', event => {
 		//	event.preventDefault();
 		//	const prompt = document.getElementById('prompt').value.trim();
@@ -242,21 +243,24 @@
 		//});
 
 		document.getElementById('generator-form').addEventListener('submit', async event => {
+			    //by default, when a form is submitted, the page will reload. We don't want that to happen, so we prevent the default behavior of the form submission.
 				event.preventDefault();
 
+				// 1. Collect the prompt, negative prompt, and any uploaded files from the form
 				const prompt = document.getElementById('prompt').value.trim();
 				const negativePrompt = document.getElementById('negative-prompt').value.trim();
 				const charFile = document.getElementById('character-file').files[0];
 				const loraFile = document.getElementById('lora-file').files[0];
 				const motionFile = document.getElementById('motion-file').files[0];
 
+				// 2. Validate that the positive prompt is provided
 				if (!prompt) {
 					showToast('Add a positive prompt to start your spritesheet.');
 					document.getElementById('prompt').focus();
 					return;
 				}
 
-				// 1. Pack all text and files into a FormData container
+				// Pack all text and files into a FormData container
 				const payload = new FormData();
 				payload.append('prompt', prompt);
 				payload.append('negative_prompt', negativePrompt);
@@ -269,6 +273,8 @@
 				try {
 					// Note: Do NOT manually set a "Content-Type" header when using FormData;
 					// the browser automatically sets multipart boundaries.
+					// response get returned once server get the http request
+					// pause work on front end here, after the server give back the response, need to change visual effect of panel preview, need to parse the returned jason file to get each individual picture
 					const response = await fetch('http://127.0.0.1:8000/api/generate', {
 						method: 'POST',
 						body: payload
@@ -276,8 +282,10 @@
 
 					if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
+					// result is a sequence of pictures, so return a json file include many picture link
 					const result = await response.json();
 					showToast('Spritesheet ready!');
+
 					console.log('Result:', result);
 				} catch (err) {
 					showToast('Generation failed. Check server connection.');
