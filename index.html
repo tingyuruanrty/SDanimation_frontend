@@ -275,6 +275,9 @@
 					// the browser automatically sets multipart boundaries.
 					// response get returned once server get the http request
 					// pause work on front end here, after the server give back the response, need to change visual effect of panel preview, need to parse the returned jason file to get each individual picture
+					// to send data to a server, we also need to pass a optional configuration object to the fetch function
+					// the optional configuration object is just instructions for browser how to assemble the http message
+					// we are sending a FormData object here as a request body, it's not a JSON object, we can't use pydantic model to validate it
 					const response = await fetch('http://127.0.0.1:8000/api/generate', {
 						method: 'POST',
 						body: payload
