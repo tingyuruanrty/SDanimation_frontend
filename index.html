@@ -99,6 +99,9 @@
 		.footer { margin-top: 26px; color: var(--muted); font-size: 11px; }
 		.toast { position: fixed; right: 24px; bottom: 24px; display: none; padding: 13px 17px; color: white; background: var(--ink); border-left: 4px solid var(--orange); box-shadow: var(--shadow); font-size: 13px; }
 		.toast.visible { display: block; animation: rise .25s ease-out; }
+
+		.frame-grid i img {width: 100%; height: 100%; object-fit: cover; display: block;}
+
 		@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 		@media (max-width: 780px) {
 			.shell { padding-top: 20px; }
@@ -278,6 +281,7 @@
 					// to send data to a server, we also need to pass a optional configuration object to the fetch function
 					// the optional configuration object is just instructions for browser how to assemble the http message
 					// we are sending a FormData object here as a request body, it's not a JSON object, we can't use pydantic model to validate it
+					showToast('connection okay');
 					const response = await fetch('http://127.0.0.1:8000/api/generate', {
 						method: 'POST',
 						body: payload
@@ -287,6 +291,20 @@
 
 					// result is a sequence of pictures, so return a json file include many picture link
 					const result = await response.json();
+					
+					if (result.status === "good" && result.image_urls) {
+  						// Grab all <i> slots inside .frame-grid
+  						const frameSlots = document.querySelectorAll('.frame-grid i');
+
+  						result.image_urls.forEach((url, index) => {
+    						// Ensure the slot exists to prevent index-out-of-bounds errors
+    						if (frameSlots[index]) {
+      						frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
+    						}
+  						});
+					}
+
+
 					showToast('Spritesheet ready!');
 
 					console.log('Result:', result);
