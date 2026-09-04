@@ -282,6 +282,8 @@
 					// the optional configuration object is just instructions for browser how to assemble the http message
 					// we are sending a FormData object here as a request body, it's not a JSON object, we can't use pydantic model to validate it
 					showToast('connection okay');
+					// fetch send a http request
+					// return the envelope of the http response
 					const response = await fetch('http://127.0.0.1:8000/api/generate', {
 						method: 'POST',
 						body: payload
@@ -290,8 +292,10 @@
 					if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
 					// result is a sequence of pictures, so return a json file include many picture link
+					// take out the response body
 					const result = await response.json();
 					
+					// response body is in good status
 					if (result.status === "good" && result.image_urls) {
   						// Grab all <i> slots inside .frame-grid
   						const frameSlots = document.querySelectorAll('.frame-grid i');
