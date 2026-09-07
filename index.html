@@ -60,7 +60,7 @@
 		textarea { width: 100%; min-height: 100px; resize: vertical; padding: 14px 16px; color: var(--ink); background: #fbfcf9; border: 1px solid var(--line); border-radius: 4px; outline: none; line-height: 1.5; }
 		textarea:focus, input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
 		textarea::placeholder { color: #a4acab; }
-		.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+		.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;}
 		.upload-box { min-height: 128px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; text-align: center; background: #fbfcf9; border: 1px dashed #b9c7c1; border-radius: 4px; transition: border-color .2s, background .2s; }
 		.upload-box:hover, .upload-box.dragging { background: var(--teal-soft); border-color: var(--teal); }
 		.upload-icon { width: 36px; height: 36px; display: grid; place-items: center; margin-bottom: 9px; color: var(--teal); background: var(--teal-soft); border-radius: 50%; font-size: 19px; }
@@ -133,17 +133,8 @@
 
 		<section class="workspace">
 			<form class="panel controls" id="generator-form">
-				<div class="section-heading"><h2>Character direction</h2><div class="step">01 / 03</div></div>
-				<div class="field">
-					<label for="prompt">Positive prompt <span>Describe what to make</span></label>
-					<textarea id="prompt" placeholder="A tiny forest guardian, mossy cloak, expressive eyes, side view, pixel art..."></textarea>
-				</div>
-				<div class="field">
-					<label for="negative-prompt">Negative prompt <span>Describe what to avoid</span></label>
-					<textarea id="negative-prompt" placeholder="Blurry, extra limbs, text, watermark, cropped, inconsistent proportions..."></textarea>
-				</div>
-
-				<div class="section-heading"><h2>Character input <span style="color:var(--muted);font-size:12px;font-weight:400">optional</span></h2><div class="step">02 / 03</div></div>
+				
+				<div class="section-heading"><h2>Character input</h2><div class="step">01 / 03</div></div>
 				<div class="upload-grid">
 					<label class="upload-box" for="character-file">
 						<div class="upload-icon">+</div><strong>Add reference image</strong><small>PNG, JPG or WEBP<br>Use a character sheet or portrait</small>
@@ -156,6 +147,16 @@
 				</div>
 				<div class="file-result" id="character-result"><span>Image</span><b></b><button type="button" aria-label="Remove character image">x</button></div>
 				<div class="file-result" id="lora-result"><span>LoRA</span><b></b><button type="button" aria-label="Remove LoRA file">x</button></div>
+
+				<div class="section-heading"><h2>Character direction</h2><div class="step">02 / 03</div></div>
+				<div class="field">
+					<label for="prompt">Positive prompt <span>Describe what to make</span></label>
+					<textarea id="prompt" placeholder="A tiny forest guardian, mossy cloak, expressive eyes, side view, pixel art..."></textarea>
+				</div>
+				<div class="field">
+					<label for="negative-prompt">Negative prompt <span>Describe what to avoid</span></label>
+					<textarea id="negative-prompt" placeholder="Blurry, extra limbs, text, watermark, cropped, inconsistent proportions..."></textarea>
+				</div>
 
 				<div class="section-heading motion"><h2>Movement reference</h2><div class="step">03 / 03</div></div>
 				<label class="upload-box motion-upload" for="motion-file">
@@ -230,7 +231,7 @@
 			});
 		}
 		connectFileInput('character-file', 'character-result');
-		connectFileInput('lora-file', 'lora-result');
+		// connectFileInput('lora-file', 'lora-result');
 		connectFileInput('motion-file', 'motion-result');
 
 		// form give submit event, 
