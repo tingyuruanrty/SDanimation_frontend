@@ -55,7 +55,7 @@
 		.section-heading h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
 		.step { color: var(--orange-dark); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
 		.field { margin-bottom: 25px; }
-		label { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 9px; font-size: 13px; font-weight: 800; }
+		label { display: flex; align-items: baseline; justify-content: space-between; font-size: 13px; font-weight: 800; }
 		label span { color: var(--muted); font-size: 11px; font-weight: 400; }
 		textarea { width: 100%; min-height: 100px; resize: vertical; padding: 14px 16px; color: var(--ink); background: #fbfcf9; border: 1px solid var(--line); border-radius: 4px; outline: none; line-height: 1.5; }
 		textarea:focus, input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
@@ -71,6 +71,26 @@
 		.file-result.visible { display: flex; }
 		.file-result b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 		.file-result button { margin-left: auto; padding: 0; color: inherit; background: none; border: 0; font-size: 17px; }
+		.character-picker { cursor: pointer; }
+		.character-picker .upload-icon { color: var(--orange-dark); background: #fff1e9; }
+		.modal-backdrop { position: fixed; inset: 0; z-index: 10; display: none; place-items: center; padding: 24px; background: rgba(23, 33, 38, .48); }
+		.modal-backdrop.visible { display: grid; }
+		.character-modal { width: min(720px, 100%); max-height: min(680px, 90vh); display: flex; flex-direction: column; overflow: hidden; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 24px 80px rgba(23, 33, 38, .25); }
+		.modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 25px 28px 20px; border-bottom: 1px solid var(--line); }
+		.modal-header h2 { margin: 0 0 5px; font-family: Georgia, serif; font-size: 28px; font-weight: 500; letter-spacing: -.04em; }
+		.modal-header p { margin: 0; color: var(--muted); font-size: 12px; }
+		.modal-close { width: 30px; height: 30px; padding: 0; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 50%; font-size: 18px; line-height: 1; }
+		.modal-close:hover { color: var(--ink); border-color: var(--ink); }
+		.character-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; overflow-y: auto; padding: 22px 28px 28px; }
+		.character-option { display: flex; align-items: center; gap: 13px; min-height: 78px; padding: 12px; color: var(--ink); text-align: left; background: #fbfcf9; border: 1px solid var(--line); border-radius: 4px; }
+		.character-option:hover, .character-option:focus { border-color: var(--teal); background: var(--teal-soft); outline: none; }
+		.character-avatar { width: 48px; height: 48px; display: grid; flex: 0 0 48px; place-items: center; color: white; background: var(--orange); border-radius: 50%; font-family: Georgia, serif; font-size: 20px; }
+		.character-option strong, .character-option small { display: block; }
+		.character-option strong { font-size: 13px; }
+		.character-option small { margin-top: 5px; color: var(--muted); font-size: 11px; }
+		.modal-state { padding: 30px 28px; color: var(--muted); font-size: 13px; text-align: center; }
+		.modal-state.error { color: var(--orange-dark); }
+		@media (max-width: 540px) { .character-list { grid-template-columns: 1fr; padding: 18px; } .modal-header { padding: 21px 18px 17px; } }
 		.motion { margin-top: 2px; }
 		.motion-upload { min-height: 152px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left; }
 		.motion-upload .upload-icon { flex: 0 0 auto; margin: 0; background: #fff1e9; color: var(--orange-dark); }
@@ -140,13 +160,12 @@
 						<div class="upload-icon">+</div><strong>Add reference image</strong><small>PNG, JPG or WEBP<br>Use a character sheet or portrait</small>
 						<input id="character-file" type="file" accept="image/png,image/jpeg,image/webp">
 					</label>
-					<label class="upload-box" for="lora-file">
-						<div class="upload-icon">+</div><strong>Add LoRA model</strong><small>Safetensors or model file<br>Optional style or character guide</small>
-						<input id="lora-file" type="file" accept=".safetensors,.ckpt,.pt">
-					</label>
+					<button class="upload-box character-picker" id="character-picker" type="button" aria-haspopup="dialog" aria-controls="character-modal">
+						<div class="upload-icon">+</div><strong>Choose a character</strong><small>Select a saved character<br>Its LoRA stays on Comfy Cloud</small>
+					</button>
 				</div>
 				<div class="file-result" id="character-result"><span>Image</span><b></b><button type="button" aria-label="Remove character image">x</button></div>
-				<div class="file-result" id="lora-result"><span>LoRA</span><b></b><button type="button" aria-label="Remove LoRA file">x</button></div>
+				<div class="file-result" id="lora-result"><span>LoRA</span><b></b><button type="button" aria-label="Remove selected character">x</button></div>
 
 				<div class="section-heading"><h2>Character direction</h2><div class="step">02 / 03</div></div>
 				<div class="field">
@@ -184,7 +203,15 @@
 		<div class="footer">Frameforge / A focused workspace for animated game art</div>
 	</main>
 	<div class="toast" id="toast" role="status"></div>
+	<div class="modal-backdrop" id="character-modal" role="dialog" aria-modal="true" aria-labelledby="character-modal-title">
+		<section class="character-modal">
+			<div class="modal-header"><div><h2 id="character-modal-title">Choose a character</h2><p>Pick a character already connected to your Comfy Cloud library.</p></div><button class="modal-close" id="close-character-modal" type="button" aria-label="Close character picker">&times;</button></div>
+			<div class="character-list" id="character-list"><div class="modal-state">Loading your characters...</div></div>
+		</section>
+	</div>
 	<script>
+		const API_BASE_URL = 'http://127.0.0.1:8000';
+		let selectedCharacter = null;
 		// toast has the reference to the document object who has an id of toast
 		const toast = document.getElementById('toast');
 		// declare variable
@@ -231,8 +258,85 @@
 			});
 		}
 		connectFileInput('character-file', 'character-result');
-		// connectFileInput('lora-file', 'lora-result');
 		connectFileInput('motion-file', 'motion-result');
+
+		const characterModal = document.getElementById('character-modal');
+		const characterList = document.getElementById('character-list');
+		const positivePrompt = document.getElementById('prompt');
+		const loraResult = document.getElementById('lora-result');
+		let insertedTriggerWord = '';
+
+		function characterInitials(character) {
+			return (character.name || character.display_name || '?').split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+		}
+
+		function renderCharacters(characters) {
+			if (!characters.length) {
+				characterList.innerHTML = '<div class="modal-state">No characters are available in your library yet.</div>';
+				return;
+			}
+			characterList.innerHTML = characters.map((character, index) => {
+				const name = character.name || character.display_name || `Character ${index + 1}`;
+				const id = character.id ?? character.character_id ?? name;
+				return `<button class="character-option" type="button" data-character-id="${encodeURIComponent(id)}"><span class="character-avatar">${characterInitials(character)}</span><span><strong>${name}</strong><small>${character.lora_filename || 'Comfy Cloud character'}</small></span></button>`;
+			}).join('');
+			characterList.querySelectorAll('.character-option').forEach((option, index) => {
+				option.addEventListener('click', () => chooseCharacter(characters[index]));
+			});
+		}
+
+		async function loadCharacters() {
+			characterList.innerHTML = '<div class="modal-state">Loading your characters...</div>';
+			try {
+				const response = await fetch(`${API_BASE_URL}/api/characters`);
+				if (!response.ok) throw new Error(`Server returned ${response.status}`);
+				const data = await response.json();
+				renderCharacters(Array.isArray(data) ? data : (data.characters || []));
+			} catch (error) {
+				characterList.innerHTML = '<div class="modal-state error">Could not load characters. Check the backend connection and try again.</div>';
+				console.error('Character lookup failed:', error);
+			}
+		}
+
+		async function chooseCharacter(character) {
+			const characterId = character.id ?? character.character_id ?? character.name;
+			try {
+				let details = character;
+				if (!character.trigger_word || !character.lora_filename) {
+					const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterId)}`);
+					if (!response.ok) throw new Error(`Server returned ${response.status}`);
+					details = await response.json();
+				}
+				details = details.character || details;
+				if (!details.trigger_word || !details.lora_filename) throw new Error('Character metadata is incomplete');
+				selectedCharacter = { id: characterId, name: details.name || character.name, trigger_word: details.trigger_word, lora_filename: details.lora_filename };
+				const triggerWord = selectedCharacter.trigger_word;
+				if (insertedTriggerWord && positivePrompt.value.startsWith(`${insertedTriggerWord}, `)) positivePrompt.value = positivePrompt.value.slice(insertedTriggerWord.length + 2);
+				if (!positivePrompt.value.includes(triggerWord)) positivePrompt.value = `${triggerWord}, ${positivePrompt.value}`.replace(/, $/, '');
+				insertedTriggerWord = triggerWord;
+				loraResult.querySelector('b').textContent = selectedCharacter.lora_filename;
+				loraResult.classList.add('visible');
+				characterModal.classList.remove('visible');
+				showToast(`${selectedCharacter.name || 'Character'} selected.`);
+			} catch (error) {
+				showToast('Could not load character details.');
+				console.error('Character metadata lookup failed:', error);
+			}
+		}
+
+		document.getElementById('character-picker').addEventListener('click', () => {
+			characterModal.classList.add('visible');
+			loadCharacters();
+		});
+		document.getElementById('close-character-modal').addEventListener('click', () => characterModal.classList.remove('visible'));
+		characterModal.addEventListener('click', event => { if (event.target === characterModal) characterModal.classList.remove('visible'); });
+		document.addEventListener('keydown', event => { if (event.key === 'Escape') characterModal.classList.remove('visible'); });
+		document.querySelector('#lora-result button').addEventListener('click', () => {
+			if (insertedTriggerWord && positivePrompt.value.startsWith(`${insertedTriggerWord}, `)) positivePrompt.value = positivePrompt.value.slice(insertedTriggerWord.length + 2);
+			insertedTriggerWord = '';
+			selectedCharacter = null;
+			loraResult.classList.remove('visible');
+		});
 
 		// form give submit event, 
 		//document.getElementById('generator-form').addEventListener('submit', event => {
@@ -254,7 +358,6 @@
 				const prompt = document.getElementById('prompt').value.trim();
 				const negativePrompt = document.getElementById('negative-prompt').value.trim();
 				const charFile = document.getElementById('character-file').files[0];
-				const loraFile = document.getElementById('lora-file').files[0];
 				const motionFile = document.getElementById('motion-file').files[0];
 
 				// 2. Validate that the positive prompt is provided
@@ -269,7 +372,11 @@
 				payload.append('prompt', prompt);
 				payload.append('negative_prompt', negativePrompt);
 				if (charFile) payload.append('character_image', charFile);
-				if (loraFile) payload.append('lora_file', loraFile);
+				if (selectedCharacter) {
+					payload.append('character_id', selectedCharacter.id);
+					payload.append('trigger_word', selectedCharacter.trigger_word);
+					payload.append('lora_filename', selectedCharacter.lora_filename);
+				}
 				if (motionFile) payload.append('motion_video', motionFile);
 
 				showToast('Uploading assets and generating spritesheet...');
