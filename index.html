@@ -40,6 +40,7 @@
 		.brand-mark span { transform: rotate(7deg); font-size: 18px; }
 		.brand-name { font-size: 20px; }
 		.version { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+		.small-title {margin-bottom: 8px;}
 		.status { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
 		.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #55a67b; box-shadow: 0 0 0 4px #dcefe5; }
 
@@ -118,10 +119,14 @@
 		.specs span { color: var(--muted); }
 		.footer { margin-top: 26px; color: var(--muted); font-size: 11px; }
 		.toast { position: fixed; right: 24px; bottom: 24px; display: none; padding: 13px 17px; color: white; background: var(--ink); border-left: 4px solid var(--orange); box-shadow: var(--shadow); font-size: 13px; }
+		/* when classes chains together with no space inbetwen, the selector targets an element that has both classes at the same time */
 		.toast.visible { display: block; animation: rise .25s ease-out; }
 
 		.frame-grid i img {width: 100%; height: 100%; object-fit: cover; display: block;}
 
+		/* keyframes define a custom animation */
+		/* rise is a custom name given to the animation */
+		/* move Y from 8 pixel beneath it's original position to it's original position */
 		@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 		@media (max-width: 780px) {
 			.shell { padding-top: 20px; }
@@ -160,20 +165,27 @@
 						<div class="upload-icon">+</div><strong>Add reference image</strong><small>PNG, JPG or WEBP<br>Use a character sheet or portrait</small>
 						<input id="character-file" type="file" accept="image/png,image/jpeg,image/webp">
 					</label>
+
+
+					<!-- button is something new to me as well -->
+					<!-- what is aria? : Accessible Rich Internet Applications -->
+					<!-- i don't need to care about it too much, since the website is meant for generate "visual" asset -->
 					<button class="upload-box character-picker" id="character-picker" type="button" aria-haspopup="dialog" aria-controls="character-modal">
 						<div class="upload-icon">+</div><strong>Choose a character</strong><small>Select a saved character<br>Its LoRA stays on Comfy Cloud</small>
 					</button>
+
+
 				</div>
 				<div class="file-result" id="character-result"><span>Image</span><b></b><button type="button" aria-label="Remove character image">x</button></div>
 				<div class="file-result" id="lora-result"><span>LoRA</span><b></b><button type="button" aria-label="Remove selected character">x</button></div>
 
 				<div class="section-heading"><h2>Character direction</h2><div class="step">02 / 03</div></div>
 				<div class="field">
-					<label for="prompt">Positive prompt <span>Describe what to make</span></label>
+					<label class="small-title" for="prompt">Positive prompt <span>Describe what to make</span></label>
 					<textarea id="prompt" placeholder="A tiny forest guardian, mossy cloak, expressive eyes, side view, pixel art..."></textarea>
 				</div>
 				<div class="field">
-					<label for="negative-prompt">Negative prompt <span>Describe what to avoid</span></label>
+					<label class="small-title" for="negative-prompt">Negative prompt <span>Describe what to avoid</span></label>
 					<textarea id="negative-prompt" placeholder="Blurry, extra limbs, text, watermark, cropped, inconsistent proportions..."></textarea>
 				</div>
 
@@ -203,12 +215,24 @@
 		<div class="footer">Frameforge / A focused workspace for animated game art</div>
 	</main>
 	<div class="toast" id="toast" role="status"></div>
+
+
+	<!-- modal here doesn't refer to the lora model, instead, it's a terminology in webdesign and user interface -->
+	<!-- just like toast refers to pop-up notifications -->
+	<!-- a modal window is an overlay dialog box that temporarily takes over the screen ant block the interaction with the page behind it until i dismiss it or complete an action -->
+	<!-- in short, it's a toast that user need to interact with -->
+	<!-- aria related stuff showed up in modal and button -->
+
+	<!-- clunky naming for id, but i can't do better -->
 	<div class="modal-backdrop" id="character-modal" role="dialog" aria-modal="true" aria-labelledby="character-modal-title">
 		<section class="character-modal">
 			<div class="modal-header"><div><h2 id="character-modal-title">Choose a character</h2><p>Pick a character already connected to your Comfy Cloud library.</p></div><button class="modal-close" id="close-character-modal" type="button" aria-label="Close character picker">&times;</button></div>
 			<div class="character-list" id="character-list"><div class="modal-state">Loading your characters...</div></div>
 		</section>
 	</div>
+
+
+
 	<script>
 		const API_BASE_URL = 'http://127.0.0.1:8000';
 		let selectedCharacter = null;
@@ -338,93 +362,82 @@
 			loraResult.classList.remove('visible');
 		});
 
-		// form give submit event, 
-		//document.getElementById('generator-form').addEventListener('submit', event => {
-		//	event.preventDefault();
-		//	const prompt = document.getElementById('prompt').value.trim();
-		//	if (!prompt) {
-		//		showToast('Add a positive prompt to start your spritesheet.');
-		//		document.getElementById('prompt').focus();
-		//		return;
-		//	}
-		//	showToast('Generation setup saved. Your spritesheet is ready to render.');
-		//});
 
 		document.getElementById('generator-form').addEventListener('submit', async event => {
-			    //by default, when a form is submitted, the page will reload. We don't want that to happen, so we prevent the default behavior of the form submission.
-				event.preventDefault();
+		    //by default, when a form is submitted, the page will reload. We don't want that to happen, so we prevent the default behavior of the form submission.
+			event.preventDefault();
 
-				// 1. Collect the prompt, negative prompt, and any uploaded files from the form
-				const prompt = document.getElementById('prompt').value.trim();
-				const negativePrompt = document.getElementById('negative-prompt').value.trim();
-				const charFile = document.getElementById('character-file').files[0];
-				const motionFile = document.getElementById('motion-file').files[0];
+			// 1. Collect the prompt, negative prompt, and any uploaded files from the form
+			const prompt = document.getElementById('prompt').value.trim();
+			const negativePrompt = document.getElementById('negative-prompt').value.trim();
+			const charFile = document.getElementById('character-file').files[0];
+			const motionFile = document.getElementById('motion-file').files[0];
 
-				// 2. Validate that the positive prompt is provided
-				if (!prompt) {
-					showToast('Add a positive prompt to start your spritesheet.');
-					document.getElementById('prompt').focus();
-					return;
-				}
+			// 2. Validate that the positive prompt is provided
+			if (!prompt) {
+				showToast('Add a positive prompt to start your spritesheet.');
+				document.getElementById('prompt').focus();
+				return;
+			}
 
-				// Pack all text and files into a FormData container
-				const payload = new FormData();
-				payload.append('prompt', prompt);
-				payload.append('negative_prompt', negativePrompt);
-				if (charFile) payload.append('character_image', charFile);
-				if (selectedCharacter) {
-					payload.append('character_id', selectedCharacter.id);
-					payload.append('trigger_word', selectedCharacter.trigger_word);
-					payload.append('lora_filename', selectedCharacter.lora_filename);
-				}
-				if (motionFile) payload.append('motion_video', motionFile);
+			// Pack all text and files into a FormData container
+			const payload = new FormData();
+			payload.append('prompt', prompt);
+			payload.append('negative_prompt', negativePrompt);
+			if (charFile) payload.append('character_image', charFile);
+			if (selectedCharacter) {
+				payload.append('character_id', selectedCharacter.id);
+				payload.append('trigger_word', selectedCharacter.trigger_word);
+				payload.append('lora_filename', selectedCharacter.lora_filename);
+			}
+			if (motionFile) payload.append('motion_video', motionFile);
 
-				showToast('Uploading assets and generating spritesheet...');
+			showToast('Uploading assets and generating spritesheet...');
 
-				try {
-					// Note: Do NOT manually set a "Content-Type" header when using FormData;
-					// the browser automatically sets multipart boundaries.
-					// response get returned once server get the http request
-					// pause work on front end here, after the server give back the response, need to change visual effect of panel preview, need to parse the returned jason file to get each individual picture
-					// to send data to a server, we also need to pass a optional configuration object to the fetch function
-					// the optional configuration object is just instructions for browser how to assemble the http message
-					// we are sending a FormData object here as a request body, it's not a JSON object, we can't use pydantic model to validate it
-					showToast('connection okay');
-					// fetch send a http request
-					// return the envelope of the http response
-					const response = await fetch('http://127.0.0.1:8000/api/generate', {
-						method: 'POST',
-						body: payload
-					});
+			try {
+				// Note: Do NOT manually set a "Content-Type" header when using FormData;
+				// the browser automatically sets multipart boundaries.
+				// response get returned once server get the http request
+				// pause work on front end here, after the server give back the response, need to change visual effect of panel preview, need to parse the returned jason file to get each individual picture
+				// to send data to a server, we also need to pass a optional configuration object to the fetch function
+				// the optional configuration object is just instructions for browser how to assemble the http message
+				// we are sending a FormData object here as a request body, it's not a JSON object, we can't use pydantic model to validate it
+				showToast('connection okay');
+				// fetch send a http request
+				// return the envelope of the http response
+				const response = await fetch('http://127.0.0.1:8000/api/generate', {
+					method: 'POST',
+					body: payload
+				});
 
-					if (!response.ok) throw new Error(`Server returned ${response.status}`);
+				if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-					// result is a sequence of pictures, so return a json file include many picture link
-					// take out the response body
-					const result = await response.json();
+				// result is a sequence of pictures, so return a json file include many picture link
+				// take out the response body
+				const result = await response.json();
 					
-					// response body is in good status
-					if (result.status === "good" && result.image_urls) {
-  						// Grab all <i> slots inside .frame-grid
-  						const frameSlots = document.querySelectorAll('.frame-grid i');
+				// response body is in good status
+				if (result.status === "good" && result.image_urls) {
+  					// Grab all <i> slots inside .frame-grid
+  					const frameSlots = document.querySelectorAll('.frame-grid i');
 
-  						result.image_urls.forEach((url, index) => {
-    						// Ensure the slot exists to prevent index-out-of-bounds errors
-    						if (frameSlots[index]) {
-      						frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
-    						}
-  						});
-					}
-
-
-					showToast('Spritesheet ready!');
-
-					console.log('Result:', result);
-				} catch (err) {
-					showToast('Generation failed. Check server connection.');
-					console.error(err);
+  					result.image_urls.forEach((url, index) => {
+    					// Ensure the slot exists to prevent index-out-of-bounds errors
+    					if (frameSlots[index]) {
+      					frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
+    					}
+  					});
 				}
-			});
+
+
+				showToast('Spritesheet ready!');
+
+				console.log('Result:', result);
+			} catch (err) {
+				showToast('Generation failed. Check server connection.');
+				console.error(err);
+			}
+		});
 	</script>
 </body>
 </html>
