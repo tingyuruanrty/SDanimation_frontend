@@ -304,34 +304,53 @@
 		// the blank area in the modal that i will fill up with character preview pictures later
 		const characterList = document.getElementById('character-list');
 		const positivePrompt = document.getElementById('prompt');
+		// result display below the upload grid
 		const loraResult = document.getElementById('lora-result');
 		let insertedTriggerWord = '';
 
+		// i think i won't need it, i need the full name of the characters all time
 		function characterInitials(character) {
 			return (character.name || character.display_name || '?').split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
 		}
 
+		// characters is a collection of character objects, each character object has a name, id, trigger_word, lora_filename and other properties
 		function renderCharacters(characters) {
+			// no character
 			if (!characters.length) {
+				// replace the innerHTML with this
 				characterList.innerHTML = '<div class="modal-state">No characters are available in your library yet.</div>';
 				return;
 			}
+
+			// fill the blank area with character preview
+			// map convert an array to another array
+			// join convert array to string seperated by it's parameter
 			characterList.innerHTML = characters.map((character, index) => {
 				const name = character.name || character.display_name || `Character ${index + 1}`;
 				const id = character.id ?? character.character_id ?? name;
+				// encodeURIComponent(id) makes string safe to use inside URL and HTML
+				// backticks are template literals
+				// if i want to tweak the character select buttons, i should do it here
 				return `<button class="character-option" type="button" data-character-id="${encodeURIComponent(id)}"><span class="character-avatar">${characterInitials(character)}</span><span><strong>${name}</strong><small>${character.lora_filename || 'Comfy Cloud character'}</small></span></button>`;
 			}).join('');
+
+			// add click event listener for each option
 			characterList.querySelectorAll('.character-option').forEach((option, index) => {
+				// click will trigger the chooseCharacter function and pass the character object to it
 				option.addEventListener('click', () => chooseCharacter(characters[index]));
 			});
 		}
 
+		// send http request to the backend to get the character list, then call renderCharacters to fill the blank area with character preview
+		// will mainly work on this later
 		async function loadCharacters() {
 			characterList.innerHTML = '<div class="modal-state">Loading your characters...</div>';
 			try {
+				// my backend pathoperation function should return a array of character objects, each character object has a name, id, trigger_word, lora_filename and other properties
 				const response = await fetch(`${API_BASE_URL}/api/characters`);
 				if (!response.ok) throw new Error(`Server returned ${response.status}`);
 				const data = await response.json();
+				// we expect the data to be an array of character objects, but if it's not, we try to get the characters property from it
 				renderCharacters(Array.isArray(data) ? data : (data.characters || []));
 			} catch (error) {
 				characterList.innerHTML = '<div class="modal-state error">Could not load characters. Check the backend connection and try again.</div>';
@@ -339,10 +358,14 @@
 			}
 		}
 
+		// take a character object
+		// it supposed to close the modal and update the positive prompt with the trigger word of the selected character
 		async function chooseCharacter(character) {
 			const characterId = character.id ?? character.character_id ?? character.name;
 			try {
 				let details = character;
+
+				// i wonder if this is necessary
 				if (!character.trigger_word || !character.lora_filename) {
 					const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterId)}`);
 					if (!response.ok) throw new Error(`Server returned ${response.status}`);
@@ -350,13 +373,19 @@
 				}
 				details = details.character || details;
 				if (!details.trigger_word || !details.lora_filename) throw new Error('Character metadata is incomplete');
+
+				// start from here, is the weight lifting part
 				selectedCharacter = { id: characterId, name: details.name || character.name, trigger_word: details.trigger_word, lora_filename: details.lora_filename };
 				const triggerWord = selectedCharacter.trigger_word;
+				// if there's a existing trigger word in the positive prompt, remove it first, then add the new trigger word to the front of the positive prompt
 				if (insertedTriggerWord && positivePrompt.value.startsWith(`${insertedTriggerWord}, `)) positivePrompt.value = positivePrompt.value.slice(insertedTriggerWord.length + 2);
+				// change the positive prompt value if promt don't include trigger word, replace the /, / at the very end of the string
 				if (!positivePrompt.value.includes(triggerWord)) positivePrompt.value = `${triggerWord}, ${positivePrompt.value}`.replace(/, $/, '');
 				insertedTriggerWord = triggerWord;
+
 				loraResult.querySelector('b').textContent = selectedCharacter.lora_filename;
 				loraResult.classList.add('visible');
+				// modal vanish
 				characterModal.classList.remove('visible');
 				showToast(`${selectedCharacter.name || 'Character'} selected.`);
 			} catch (error) {
@@ -365,11 +394,13 @@
 			}
 		}
 
+		// the button in the upload grid that will open the modal
 		document.getElementById('character-picker').addEventListener('click', () => {
 			characterModal.classList.add('visible');
 			loadCharacters();
 		});
 		document.getElementById('close-character-modal').addEventListener('click', () => characterModal.classList.remove('visible'));
+		// if click on dimming backdrop, close the modal
 		characterModal.addEventListener('click', event => { if (event.target === characterModal) characterModal.classList.remove('visible'); });
 		document.addEventListener('keydown', event => { if (event.key === 'Escape') characterModal.classList.remove('visible'); });
 		document.querySelector('#lora-result button').addEventListener('click', () => {
@@ -403,6 +434,7 @@
 			payload.append('negative_prompt', negativePrompt);
 			if (charFile) payload.append('character_image', charFile);
 			if (selectedCharacter) {
+				// i don't have to append the trigger_word, but i adhere copilot, he's the expert, he knows what he's doing 
 				payload.append('character_id', selectedCharacter.id);
 				payload.append('trigger_word', selectedCharacter.trigger_word);
 				payload.append('lora_filename', selectedCharacter.lora_filename);
