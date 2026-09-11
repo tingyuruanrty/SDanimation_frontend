@@ -473,7 +473,8 @@
   					result.image_urls.forEach((url, index) => {
     					// Ensure the slot exists to prevent index-out-of-bounds errors
     					if (frameSlots[index]) {
-      					frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
+							// i should apply some style to the image
+      						frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
     					}
   					});
 				}
