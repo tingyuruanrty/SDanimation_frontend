@@ -346,7 +346,7 @@
 		async function loadCharacters() {
 			characterList.innerHTML = '<div class="modal-state">Loading your characters...</div>';
 			try {
-				// my backend pathoperation function should return a array of character objects, each character object has a name, id, trigger_word, lora_filename and other properties
+				// my backend pathoperation function should return an array of character objects, each character object has a name, id, trigger_word, lora_filename and other properties
 				const response = await fetch(`${API_BASE_URL}/api/characters`);
 				if (!response.ok) throw new Error(`Server returned ${response.status}`);
 				const data = await response.json();
@@ -371,6 +371,7 @@
 					if (!response.ok) throw new Error(`Server returned ${response.status}`);
 					details = await response.json();
 				}
+				
 				details = details.character || details;
 				if (!details.trigger_word || !details.lora_filename) throw new Error('Character metadata is incomplete');
 
@@ -435,6 +436,7 @@
 			if (charFile) payload.append('character_image', charFile);
 			if (selectedCharacter) {
 				// i don't have to append the trigger_word, but i adhere copilot, he's the expert, he knows what he's doing 
+				// could do some trimming here
 				payload.append('character_id', selectedCharacter.id);
 				payload.append('trigger_word', selectedCharacter.trigger_word);
 				payload.append('lora_filename', selectedCharacter.lora_filename);
