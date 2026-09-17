@@ -108,9 +108,9 @@
 		.badge { padding: 5px 8px; color: var(--teal); background: var(--teal-soft); border-radius: 2px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 		.preview-stage { min-height: 340px; display: grid; place-items: center; padding: 25px; background: #e9ece5; background-image: linear-gradient(45deg, #e1e5de 25%, transparent 25%), linear-gradient(-45deg, #e1e5de 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e1e5de 75%), linear-gradient(-45deg, transparent 75%, #e1e5de 75%); background-size: 24px 24px; background-position: 0 0, 0 12px, 12px -12px, -12px 0; }
 		.sprite-card { width: min(280px, 100%); aspect-ratio: 784/1344; display: grid; place-items: center; position: relative; background: #f9faf5; border: 1px solid rgba(23,33,38,.16); box-shadow: 10px 10px 0 rgba(23,33,38,.1); }
-		.sprite-art { width: 58%; height: 58%; position: relative; }
+		/*.sprite-art { width: 58%; height: 58%; position: relative; }
 		.sprite-art:before { content: ""; position: absolute; width: 54%; height: 54%; left: 23%; top: 19%; background: var(--orange); border-radius: 48% 52% 45% 55%; transform: rotate(-16deg); box-shadow: 19px 31px 0 -5px var(--teal), -17px 23px 0 -11px var(--yellow); }
-		.sprite-art:after { content: ""; position: absolute; width: 23%; height: 11%; left: 38%; top: 40%; background: var(--ink); border-radius: 50%; box-shadow: 0 25px 0 -2px var(--ink); }
+		.sprite-art:after { content: ""; position: absolute; width: 23%; height: 11%; left: 38%; top: 40%; background: var(--ink); border-radius: 50%; box-shadow: 0 25px 0 -2px var(--ink); } */
 		.frame-grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); pointer-events: none; }
 		.frame-grid i { display: flex; align-items: center; justify-content: center; overflow: hidden; min-width: 0; min-height: 0; width: 100%; height: 100%; border-right: 1px solid rgba(23,33,38,.1); border-bottom: 1px solid rgba(23,33,38,.1); }
 		.preview-caption { padding: 18px 22px 21px; }
@@ -178,7 +178,7 @@
 				<div class="section-heading"><h2>Character input</h2><div class="step">01 / 03</div></div>
 				<div class="upload-grid">
 					<label class="upload-box" for="character-file">
-						<div class="upload-icon">+</div><strong>Add reference image</strong><small>PNG, JPG or WEBP<br>Use a character sheet or portrait</small>
+						<div class="upload-icon">+</div><strong>Add reference image</strong><small>the effect isn't ideal<br>i'm still tuning this part workflow</small>
 						<input id="character-file" type="file" accept="image/png,image/jpeg,image/webp">
 					</label>
 
@@ -224,7 +224,9 @@
 
 			<aside class="panel preview">
 				<div class="preview-head"><h2>Output preview</h2><span class="badge">16 frames</span></div>
-				<div class="preview-stage"><div class="sprite-card"><div class="sprite-art"></div><div class="frame-grid"> <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+				<div class="preview-stage"><div class="sprite-card">
+					<!-- <div class="sprite-art"></div> -->
+					<div class="frame-grid"> <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
 				<div class="preview-caption"><p>Your generated animation will appear here as a transparent PNG spritesheet.</p><div class="specs"><div><span>Layout</span><br>4 x 4 grid</div><div><span>Canvas</span><br>1024 x 1024</div><div><span>Format</span><br>PNG</div></div></div>
 
 				<!-- new added download-all button -->
