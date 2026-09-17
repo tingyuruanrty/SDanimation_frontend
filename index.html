@@ -124,6 +124,21 @@
 
 		.frame-grid i img {width: 100%; height: 100%; object-fit: cover; display: block;}
 
+
+		.download-btn {
+		    width: 100%;
+		    margin-top: 18px;
+		    justify-content: center;
+		}
+
+		.download-btn:disabled {
+		    opacity: 0.45;
+		    cursor: not-allowed;
+		    transform: none !important;
+		    background: var(--muted);
+		}
+
+
 		/* keyframes define a custom animation */
 		/* rise is a custom name given to the animation */
 		/* move Y from 8 pixel beneath it's original position to it's original position */
@@ -185,7 +200,7 @@
 				<div class="section-heading"><h2>Character direction</h2><div class="step">02 / 03</div></div>
 				<div class="field">
 					<label class="small-title" for="prompt">Positive prompt <span>Describe what to make</span></label>
-					<textarea id="prompt" placeholder="A tiny forest guardian, mossy cloak, expressive eyes, side view, pixel art..."></textarea>
+					<textarea id="prompt" placeholder="1 girl, expressive eyes, side view, simple background..."></textarea>
 				</div>
 				<div class="field">
 					<label class="small-title" for="negative-prompt">Negative prompt <span>Describe what to avoid</span></label>
@@ -211,6 +226,15 @@
 				<div class="preview-head"><h2>Output preview</h2><span class="badge">16 frames</span></div>
 				<div class="preview-stage"><div class="sprite-card"><div class="sprite-art"></div><div class="frame-grid"> <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
 				<div class="preview-caption"><p>Your generated animation will appear here as a transparent PNG spritesheet.</p><div class="specs"><div><span>Layout</span><br>4 x 4 grid</div><div><span>Canvas</span><br>1024 x 1024</div><div><span>Format</span><br>PNG</div></div></div>
+
+				<!-- new added download-all button -->
+				<button id="download-all-btn" class="generate download-btn" type="button" disabled>
+    				<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 17px; height: 17px;">
+        				<path d="M10 3v10m0 0l-4-4m4 4l4-4M3 17h14"/>
+    				</svg>
+    				<span>Download All Frames</span>
+				</button>
+
 			</aside>
 		</section>
 
@@ -411,6 +435,8 @@
 			loraResult.classList.remove('visible');
 		});
 
+		const downloadBtn = document.getElementById('download-all-btn');
+		let activeImageUrls = [];
 
 		document.getElementById('generator-form').addEventListener('submit', async event => {
 		    //by default, when a form is submitted, the page will reload. We don't want that to happen, so we prevent the default behavior of the form submission.
@@ -466,20 +492,34 @@
 				// result is a sequence of pictures, so return a json file include many picture link
 				// take out the response body
 				const result = await response.json();
-					
-				// response body is in good status
+				
+				//learn it on 9/17
+				// 1. In your generator-form submit handler, update the success branch:
 				if (result.status === "good" && result.image_urls) {
-  					// Grab all <i> slots inside .frame-grid
-  					const frameSlots = document.querySelectorAll('.frame-grid i');
+				    activeImageUrls = result.image_urls;
+				    downloadBtn.disabled = false; // Enable the button
 
-  					result.image_urls.forEach((url, index) => {
-    					// Ensure the slot exists to prevent index-out-of-bounds errors
-    					if (frameSlots[index]) {
-							// i should apply some style to the image
-      						frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
-    					}
-  					});
+				    const frameSlots = document.querySelectorAll('.frame-grid i');
+				    result.image_urls.forEach((url, index) => {
+				        if (frameSlots[index]) {
+				            frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
+				        }
+				    });
 				}
+
+				// response body is in good status
+				//if (result.status === "good" && result.image_urls) {
+  					// Grab all <i> slots inside .frame-grid
+  					//const frameSlots = document.querySelectorAll('.frame-grid i');
+
+  					//result.image_urls.forEach((url, index) => {
+    					// Ensure the slot exists to prevent index-out-of-bounds errors
+    					//if (frameSlots[index]) {
+							// i should apply some style to the image
+      						//frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
+    					//}
+  					//});
+				//}
 
 
 				showToast('Spritesheet ready!');
@@ -489,6 +529,39 @@
 				showToast('Generation failed. Check server connection.');
 				console.error(err);
 			}
+		});
+
+		// learn it on 9/17
+		downloadBtn.addEventListener('click', async () => {
+		    if (!activeImageUrls.length) return;
+
+		    downloadBtn.disabled = true;
+		    showToast(`Downloading ${activeImageUrls.length} frames...`);
+
+		    for (let i = 0; i < activeImageUrls.length; i++) {
+		        try {
+		            const res = await fetch(activeImageUrls[i]);
+		            const blob = await res.blob();
+		            const blobUrl = URL.createObjectURL(blob);
+
+		            const anchor = document.createElement('a');
+		            anchor.href = blobUrl;
+		            anchor.download = `frame_${String(i + 1).padStart(2, '0')}.png`;
+		            document.body.appendChild(anchor);
+		            anchor.click();
+		            document.body.removeChild(anchor);
+
+		            URL.revokeObjectURL(blobUrl);
+
+		            // 200ms throttle to prevent browser download-blocking popups
+		            await new Promise(resolve => setTimeout(resolve, 200));
+		        } catch (err) {
+		            console.error(`Failed to download frame ${i + 1}:`, err);
+		        }
+		    }
+
+		    downloadBtn.disabled = false;
+		    showToast('Download complete!');
 		});
 	</script>
 </body>

@@ -13,6 +13,5 @@ lora_filename(filename on comfy cloud)
 
 # Todo:
 1. i need to fix the style for the preview section, the content is overflowing the grid box
-2. the preview image for the lora is probaboly not showed
-3. i nead a download button, bath download the generated picture
-4. manage synchronize/asynchronize
+2. fix download button
+3. manage synchronize/asynchronize
