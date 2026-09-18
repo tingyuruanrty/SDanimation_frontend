@@ -484,7 +484,7 @@
 				showToast('connection okay');
 				// fetch send a http request
 				// return the envelope of the http response
-				const response = await fetch('http://127.0.0.1:8000/api/generate', {
+				const response = await fetch(`${API_BASE_URL}/api/generate`, {
 					method: 'POST',
 					body: payload
 				});
