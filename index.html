@@ -138,6 +138,74 @@
 		    background: var(--muted);
 		}
 
+		/* erase these after the maintenance */
+		.maintenance-banner {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(59, 130, 246, 0.10));
+  border: 1px solid rgba(245, 158, 11, 0.45);
+  border-left: 4px solid #f59e0b;
+  border-radius: 10px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  color: #f3f4f6;
+  font-family: inherit;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+}
+
+.maintenance-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05rem;
+  color: #fbbf24;
+  margin-bottom: 8px;
+}
+
+.status-dot {
+  width: 10px;
+  height: 10px;
+  background-color: #f59e0b;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px #f59e0b;
+  animation: pulse-dot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.55;
+  }
+}
+
+.maintenance-body {
+  margin: 0 0 10px 0;
+  font-size: 0.94rem;
+  line-height: 1.5;
+  color: #800000;
+}
+
+.maintenance-highlight {
+  margin: 0;
+  padding: 10px 12px;
+  background: rgba(17, 24, 39, 0.55);
+  border-radius: 6px;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.25);
+}
+
+.maintenance-highlight strong {
+  color: #60a5fa;
+}
+
+
+
+
 
 		/* keyframes define a custom animation */
 		/* rise is a custom name given to the animation */
@@ -163,6 +231,21 @@
 			<div class="brand"><div class="brand-mark"><span>4x</span></div><div><div class="brand-name">Frameforge</div><div class="version">Spritesheet studio</div></div></div>
 			<div class="status"><span class="status-dot"></span> Ready to create</div>
 		</header>
+
+<!-- Maintenance banner-->
+<div class="maintenance-banner" role="status" aria-live="polite">
+  <div class="maintenance-header">
+    <span class="status-dot"></span>
+    <strong>Service Update &amp; Major Pipeline Upgrade in Progress</strong>
+  </div>
+  <p class="maintenance-body">
+    Sprite generation is temporarily paused while we update our backend pipeline to accommodate a recent upstream change to the cloud video/frame loader node. 
+  </p>
+  <p class="maintenance-highlight">
+    <strong>What's New:</strong> Alongside this fix, we are deploying a major <strong>AnimateDiff temporal motion module</strong> upgrade—delivering significantly smoother frame-to-frame continuity and production-ready sprite sheets. We'll be back online shortly!
+  </p>
+</div>
+
 
 		<section>
 		<section class="intro">
