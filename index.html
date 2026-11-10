@@ -1,654 +1,676 @@
 <!doctype html>
 <html lang="en">
 <head>
-	<meta charset="utf-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<title>Frameforge - Spritesheet Generator</title>
-	<style>
-		:root {
-			--ink: #172126;
-			--muted: #6d7778;
-			--line: #d9dfdc;
-			--paper: #f6f7f1;
-			--panel: #ffffff;
-			--orange: #f2693b;
-			--orange-dark: #cf4d23;
-			--teal: #187c79;
-			--teal-soft: #e5f2ef;
-			--yellow: #f4d36b;
-			--shadow: 0 18px 50px rgba(23, 33, 38, .08);
-		}
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Frameforge - Spritesheet Generator</title>
+    <style>
+        :root {
+            --ink: #172126;
+            --muted: #6d7778;
+            --line: #d9dfdc;
+            --paper: #f6f7f1;
+            --panel: #ffffff;
+            --blue: #2563eb;
+            --blue-dark: #1d4ed8;
+            --orange: #f2693b;
+            --orange-dark: #cf4d23;
+            --teal: #187c79;
+            --teal-soft: #e5f2ef;
+            --yellow: #f4d36b;
+            --shadow: 0 18px 50px rgba(23, 33, 38, .08);
+            --disabled-bg: #9ca3af;
+        }
 
-		* { box-sizing: border-box; }
-		body {
-			margin: 0;
-			color: var(--ink);
-			background: var(--paper);
-			font-family: "Trebuchet MS", "Segoe UI", sans-serif;
-		}
-		button, input { font: inherit; }
-		button { cursor: pointer; }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            color: var(--ink);
+            background: var(--paper);
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+        }
+        button, input { font: inherit; }
+        button { cursor: pointer; }
 
-		.shell { min-height: 100vh; padding: 28px clamp(20px, 4vw, 64px) 56px; display: flex; flex-direction: column; align-items:center}
-		.topbar, .workspace, .footer {
-			width: min(1240px, 100%);
-			margin: 0 auto;
-		}
-		.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 62px; }
-		.brand { display: flex; gap: 12px; align-items: center; font-weight: 800; letter-spacing: -.04em; }
-		.brand-mark { width: 34px; height: 34px; display: grid; place-items: center; color: white; background: var(--orange); border-radius: 10px 10px 10px 2px; transform: rotate(-7deg); }
-		.brand-mark span { transform: rotate(7deg); font-size: 18px; }
-		.brand-name { font-size: 20px; }
-		.version { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
-		.small-title {margin-bottom: 8px;}
-		.status { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
-		.status-dot { width: 8px; height: 8px; border-radius: 50%; background: #55a67b; box-shadow: 0 0 0 4px #dcefe5; }
+        .shell { min-height: 100vh; padding: 28px clamp(20px, 4vw, 64px) 56px; display: flex; flex-direction: column; align-items:center}
+        .topbar, .workspace, .footer {
+            width: min(1240px, 100%);
+            margin: 0 auto;
+        }
+        .topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 62px; }
+        .brand { display: flex; gap: 12px; align-items: center; font-weight: 800; letter-spacing: -.04em; }
+        .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; color: white; background: var(--orange); border-radius: 10px 10px 10px 2px; transform: rotate(-7deg); }
+        .brand-mark span { transform: rotate(7deg); font-size: 18px; }
+        .brand-name { font-size: 20px; }
+        .version { color: var(--muted); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; }
+        .small-title {margin-bottom: 8px;}
+        .status { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; }
+        .status-dot { width: 8px; height: 8px; border-radius: 50%; background: #55a67b; box-shadow: 0 0 0 4px #dcefe5; }
 
-		.intro { max-width: 760px; margin-bottom: 42px;}
-		.eyebrow { color: var(--orange-dark); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
-		h1 { margin: 13px 0 14px; font-family: Georgia, serif; font-size: clamp(42px, 6vw, 76px); line-height: .98; letter-spacing: -.055em; font-weight: 500; }
-		.intro p { max-width: 600px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.55; }
+        .intro { max-width: 760px; margin-bottom: 42px;}
+        .eyebrow { color: var(--orange-dark); font-size: 12px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
+        h1 { margin: 13px 0 14px; font-family: Georgia, serif; font-size: clamp(42px, 6vw, 76px); line-height: .98; letter-spacing: -.055em; font-weight: 500; }
+        .intro p { max-width: 600px; margin: 0; color: var(--muted); font-size: 17px; line-height: 1.55; }
 
-		.workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr); gap: 24px; align-items: start; }
-		.panel { background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
-		.controls { padding: clamp(22px, 3vw, 36px); }
-		.section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
-		.section-heading h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
-		.step { color: var(--orange-dark); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
-		.field { margin-bottom: 25px; }
-		label { display: flex; align-items: baseline; justify-content: space-between; font-size: 13px; font-weight: 800; }
-		label span { color: var(--muted); font-size: 11px; font-weight: 400; }
-		textarea { width: 100%; min-height: 100px; resize: vertical; padding: 14px 16px; color: var(--ink); background: #fbfcf9; border: 1px solid var(--line); border-radius: 4px; outline: none; line-height: 1.5; }
-		textarea:focus, input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
-		textarea::placeholder { color: #a4acab; }
-		.upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;}
-		.upload-box { min-height: 128px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; text-align: center; background: #fbfcf9; border: 1px dashed #b9c7c1; border-radius: 4px; transition: border-color .2s, background .2s; }
-		.upload-box:hover, .upload-box.dragging { background: var(--teal-soft); border-color: var(--teal); }
-		.upload-icon { width: 36px; height: 36px; display: grid; place-items: center; margin-bottom: 9px; color: var(--teal); background: var(--teal-soft); border-radius: 50%; font-size: 19px; }
-		.upload-box strong { font-size: 13px; }
-		.upload-box small { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.35; }
-		input[type="file"] { display: none; }
-		.file-result { display: none; align-items: center; gap: 8px; margin-top: 9px; padding: 8px 10px; color: var(--teal); background: var(--teal-soft); border-radius: 3px; font-size: 12px; overflow: hidden; }
-		.file-result.visible { display: flex; }
-		.file-result b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-		.file-result button { margin-left: auto; padding: 0; color: inherit; background: none; border: 0; font-size: 17px; }
-		.character-picker { cursor: pointer; }
-		.character-picker .upload-icon { color: var(--orange-dark); background: #fff1e9; }
-		.modal-backdrop { position: fixed; inset: 0; z-index: 10; display: none; place-items: center; padding: 24px; background: rgba(23, 33, 38, .48); }
-		.modal-backdrop.visible { display: grid; }
-		.character-modal { width: min(720px, 100%); max-height: min(680px, 90vh); display: flex; flex-direction: column; overflow: hidden; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 24px 80px rgba(23, 33, 38, .25); }
-		.modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 25px 28px 20px; border-bottom: 1px solid var(--line); }
-		.modal-header h2 { margin: 0 0 5px; font-family: Georgia, serif; font-size: 28px; font-weight: 500; letter-spacing: -.04em; }
-		.modal-header p { margin: 0; color: var(--muted); font-size: 12px; }
-		.modal-close { width: 30px; height: 30px; padding: 0; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 50%; font-size: 18px; line-height: 1; }
-		.modal-close:hover { color: var(--ink); border-color: var(--ink); }
-		.character-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; overflow-y: auto; padding: 22px 28px 28px; }
-		.character-option { display: flex; align-items: center; gap: 13px; min-height: 78px; padding: 12px; color: var(--ink); text-align: left; background: #fbfcf9; border: 1px solid var(--line); border-radius: 4px; }
-		.character-option:hover, .character-option:focus { border-color: var(--teal); background: var(--teal-soft); outline: none; }
-		.character-avatar { width: 48px; height: 48px; display: grid; flex: 0 0 48px; place-items: center; color: white; background: var(--orange); border-radius: 50%; font-family: Georgia, serif; font-size: 20px; }
-		.character-option strong, .character-option small { display: block; }
-		.character-option strong { font-size: 13px; }
-		.character-option small { margin-top: 5px; color: var(--muted); font-size: 11px; }
-		.modal-state { padding: 30px 28px; color: var(--muted); font-size: 13px; text-align: center; }
-		.modal-state.error { color: var(--orange-dark); }
-		@media (max-width: 540px) { .character-list { grid-template-columns: 1fr; padding: 18px; } .modal-header { padding: 21px 18px 17px; } }
-		.motion { margin-top: 2px; }
-		.motion-upload { min-height: 152px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left; }
-		.motion-upload .upload-icon { flex: 0 0 auto; margin: 0; background: #fff1e9; color: var(--orange-dark); }
-		.motion-upload small { max-width: 290px; }
-		.action-row { display: flex; align-items: center; gap: 14px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); }
-		.generate { display: inline-flex; align-items: center; gap: 11px; padding: 14px 19px; color: white; background: var(--orange); border: 0; border-radius: 3px; font-weight: 800; transition: background .2s, transform .2s; }
-		.generate:hover { background: var(--orange-dark); transform: translateY(-1px); }
-		.generate svg { width: 17px; height: 17px; }
-		.helper { color: var(--muted); font-size: 11px; line-height: 1.4; }
+        .workspace { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr); gap: 24px; align-items: start; }
+        .panel { background: var(--panel); border: 1px solid var(--line); box-shadow: var(--shadow); }
+        .controls { padding: clamp(22px, 3vw, 36px); }
+        .section-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+        .section-heading h2 { margin: 0; font-size: 18px; letter-spacing: -.02em; }
+        .step { color: var(--orange-dark); font-size: 11px; font-weight: 800; letter-spacing: .12em; }
+        .field { margin-bottom: 25px; }
+        label { display: flex; align-items: baseline; justify-content: space-between; font-size: 13px; font-weight: 800; }
+        label span { color: var(--muted); font-size: 11px; font-weight: 400; }
+        textarea { width: 100%; min-height: 100px; resize: vertical; padding: 14px 16px; color: var(--ink); background: #fbfcf9; border: 1px solid var(--line); border-radius: 4px; outline: none; line-height: 1.5; }
+        textarea:focus, input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-soft); }
+        textarea::placeholder { color: #a4acab; }
+        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 18px;}
+        .upload-box { min-height: 128px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 18px; text-align: center; background: #fbfcf9; border: 1px dashed #b9c7c1; border-radius: 4px; transition: border-color .2s, background .2s; }
+        .upload-box:hover, .upload-box.dragging { background: var(--teal-soft); border-color: var(--teal); }
+        .upload-icon { width: 36px; height: 36px; display: grid; place-items: center; margin-bottom: 9px; color: var(--teal); background: var(--teal-soft); border-radius: 50%; font-size: 19px; }
+        .upload-box strong { font-size: 13px; }
+        .upload-box small { margin-top: 5px; color: var(--muted); font-size: 11px; line-height: 1.35; }
+        input[type="file"] { display: none; }
+        .file-result { display: none; align-items: center; gap: 8px; margin-top: 9px; padding: 8px 10px; color: var(--teal); background: var(--teal-soft); border-radius: 3px; font-size: 12px; overflow: hidden; }
+        .file-result.visible { display: flex; }
+        .file-result b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .file-result button { margin-left: auto; padding: 0; color: inherit; background: none; border: 0; font-size: 17px; }
+        .character-picker { cursor: pointer; }
+        .character-picker .upload-icon { color: var(--orange-dark); background: #fff1e9; }
+        .modal-backdrop { position: fixed; inset: 0; z-index: 10; display: none; place-items: center; padding: 24px; background: rgba(23, 33, 38, .48); }
+        .modal-backdrop.visible { display: grid; }
+        .character-modal { width: min(720px, 100%); max-height: min(680px, 90vh); display: flex; flex-direction: column; overflow: hidden; background: var(--panel); border: 1px solid var(--line); box-shadow: 0 24px 80px rgba(23, 33, 38, .25); }
+        .modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; padding: 25px 28px 20px; border-bottom: 1px solid var(--line); }
+        .modal-header h2 { margin: 0 0 5px; font-family: Georgia, serif; font-size: 28px; font-weight: 500; letter-spacing: -.04em; }
+        .modal-header p { margin: 0; color: var(--muted); font-size: 12px; }
+        .modal-close { width: 30px; height: 30px; padding: 0; color: var(--muted); background: none; border: 1px solid var(--line); border-radius: 50%; font-size: 18px; line-height: 1; }
+        .modal-close:hover { color: var(--ink); border-color: var(--ink); }
+        .character-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; overflow-y: auto; padding: 22px 28px 28px; }
+        .character-option { display: flex; align-items: center; gap: 13px; min-height: 78px; padding: 12px; color: var(--ink); text-align: left; background: #fbfcf9; border: 1px solid var(--line); border-radius: 4px; }
+        .character-option:hover, .character-option:focus { border-color: var(--teal); background: var(--teal-soft); outline: none; }
+        .character-avatar { width: 48px; height: 48px; display: grid; flex: 0 0 48px; place-items: center; color: white; background: var(--orange); border-radius: 50%; font-family: Georgia, serif; font-size: 20px; }
+        .character-option strong, .character-option small { display: block; }
+        .character-option strong { font-size: 13px; }
+        .character-option small { margin-top: 5px; color: var(--muted); font-size: 11px; }
+        .modal-state { padding: 30px 28px; color: var(--muted); font-size: 13px; text-align: center; }
+        .modal-state.error { color: var(--orange-dark); }
+        @media (max-width: 540px) { .character-list { grid-template-columns: 1fr; padding: 18px; } .modal-header { padding: 21px 18px 17px; } }
+        .motion { margin-top: 2px; }
+        .motion-upload { min-height: 152px; flex-direction: row; justify-content: flex-start; gap: 15px; text-align: left; }
+        .motion-upload .upload-icon { flex: 0 0 auto; margin: 0; background: #fff1e9; color: var(--orange-dark); }
+        .motion-upload small { max-width: 290px; }
+        .action-row { display: flex; align-items: center; gap: 14px; margin-top: 30px; padding-top: 24px; border-top: 1px solid var(--line); }
 
-		.preview { position: sticky; top: 20px; overflow: hidden; }
-		.preview-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--line); }
-		.preview-head h2 { margin: 0; font-size: 17px; }
-		.badge { padding: 5px 8px; color: var(--teal); background: var(--teal-soft); border-radius: 2px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
-		.preview-stage { min-height: 340px; display: grid; place-items: center; padding: 25px; background: #e9ece5; background-image: linear-gradient(45deg, #e1e5de 25%, transparent 25%), linear-gradient(-45deg, #e1e5de 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e1e5de 75%), linear-gradient(-45deg, transparent 75%, #e1e5de 75%); background-size: 24px 24px; background-position: 0 0, 0 12px, 12px -12px, -12px 0; }
-		.sprite-card { width: min(280px, 100%); aspect-ratio: 784/1344; display: grid; place-items: center; position: relative; background: #f9faf5; border: 1px solid rgba(23,33,38,.16); box-shadow: 10px 10px 0 rgba(23,33,38,.1); }
-		/*.sprite-art { width: 58%; height: 58%; position: relative; }
-		.sprite-art:before { content: ""; position: absolute; width: 54%; height: 54%; left: 23%; top: 19%; background: var(--orange); border-radius: 48% 52% 45% 55%; transform: rotate(-16deg); box-shadow: 19px 31px 0 -5px var(--teal), -17px 23px 0 -11px var(--yellow); }
-		.sprite-art:after { content: ""; position: absolute; width: 23%; height: 11%; left: 38%; top: 40%; background: var(--ink); border-radius: 50%; box-shadow: 0 25px 0 -2px var(--ink); } */
-		.frame-grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); pointer-events: none; }
-		.frame-grid i { display: flex; align-items: center; justify-content: center; overflow: hidden; min-width: 0; min-height: 0; width: 100%; height: 100%; border-right: 1px solid rgba(23,33,38,.1); border-bottom: 1px solid rgba(23,33,38,.1); }
-		.preview-caption { padding: 18px 22px 21px; }
-		.preview-caption p { margin: 0 0 15px; color: var(--muted); font-size: 12px; line-height: 1.5; }
-		.specs { display: flex; gap: 18px; color: var(--ink); font-size: 11px; }
-		.specs span { color: var(--muted); }
-		.footer { margin-top: 26px; color: var(--muted); font-size: 11px; }
-		.toast { position: fixed; right: 24px; bottom: 24px; display: none; padding: 13px 17px; color: white; background: var(--ink); border-left: 4px solid var(--orange); box-shadow: var(--shadow); font-size: 13px; }
-		/* when classes chains together with no space inbetwen, the selector targets an element that has both classes at the same time */
-		.toast.visible { display: block; animation: rise .25s ease-out; }
+        .generate {
+            display: inline-flex;
+            align-items: center;
+            gap: 11px;
+            padding: 14px 19px;
+            color: white;
+            background: var(--blue);
+            border: 0;
+            border-radius: 3px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background .2s, transform .2s;
+        }
 
-		.frame-grid i img {width: 100%; height: 100%; object-fit: contain; display: block;}
+        .generate:hover:not(:disabled) {
+            background: var(--blue-dark);
+            transform: translateY(-1px);
+        }
 
+        .generate:active:not(:disabled) {
+            transform: translateY(0);
+        }
 
-		.download-btn {
-		    width: 100%;
-		    margin-top: 18px;
-		    justify-content: center;
-		}
+        .generate:disabled {
+            background: var(--disabled-bg);
+            cursor: not-allowed;
+            transform: none;
+        }
 
-		.download-btn:disabled {
-		    opacity: 0.45;
-		    cursor: not-allowed;
-		    transform: none !important;
-		    background: var(--muted);
-		}
+        .generate svg {
+            width: 17px;
+            height: 17px;
+        }
 
-		/* erase these after the maintenance */
-		.maintenance-banner {
-  background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(59, 130, 246, 0.10));
-  border: 1px solid rgba(245, 158, 11, 0.45);
-  border-left: 4px solid #f59e0b;
-  border-radius: 10px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
-  color: #f3f4f6;
-  font-family: inherit;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-}
+        /* Poll Button (Now Orange, matches original generate styles) */
+        .poll {
+            display: inline-flex;
+            align-items: center;
+            gap: 11px;
+            padding: 14px 19px;
+            color: white;
+            background: var(--orange);
+            border: 0;
+            border-radius: 3px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: background .2s, transform .2s;
+        }
 
-.maintenance-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 1.05rem;
-  color: #fbbf24;
-  margin-bottom: 8px;
-}
+        .poll:hover:not(:disabled) {
+            background: var(--orange-dark);
+            transform: translateY(-1px);
+        }
 
-.status-dot {
-  width: 10px;
-  height: 10px;
-  background-color: #f59e0b;
-  border-radius: 50%;
-  display: inline-block;
-  box-shadow: 0 0 8px #f59e0b;
-  animation: pulse-dot 1.8s infinite ease-in-out;
-}
+        .poll:active:not(:disabled) {
+            transform: translateY(0);
+        }
 
-@keyframes pulse-dot {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 0.55;
-  }
-}
+        .poll:disabled {
+            background: var(--disabled-bg);
+            cursor: not-allowed;
+            transform: none;
+        }
 
-.maintenance-body {
-  margin: 0 0 10px 0;
-  font-size: 0.94rem;
-  line-height: 1.5;
-  color: #800000;
-}
+        .poll svg {
+            width: 17px;
+            height: 17px;
+        }
+        .helper { color: var(--muted); font-size: 11px; line-height: 1.4; word-break: break-all; }
 
-.maintenance-highlight {
-  margin: 0;
-  padding: 10px 12px;
-  background: rgba(17, 24, 39, 0.55);
-  border-radius: 6px;
-  font-size: 0.9rem;
-  line-height: 1.45;
-  color: #93c5fd;
-  border: 1px solid rgba(59, 130, 246, 0.25);
-}
+        .preview { position: sticky; top: 20px; overflow: hidden; }
+        .preview-head { display: flex; justify-content: space-between; align-items: center; padding: 20px 22px; border-bottom: 1px solid var(--line); }
+        .preview-head h2 { margin: 0; font-size: 17px; }
+        .badge { padding: 5px 8px; color: var(--teal); background: var(--teal-soft); border-radius: 2px; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+        .preview-stage { min-height: 340px; display: grid; place-items: center; padding: 25px; background: #e9ece5; background-image: linear-gradient(45deg, #e1e5de 25%, transparent 25%), linear-gradient(-45deg, #e1e5de 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e1e5de 75%), linear-gradient(-45deg, transparent 75%, #e1e5de 75%); background-size: 24px 24px; background-position: 0 0, 0 12px, 12px -12px, -12px 0; }
+        .sprite-card { width: min(280px, 100%); aspect-ratio: 784/1344; display: grid; place-items: center; position: relative; background: #f9faf5; border: 1px solid rgba(23,33,38,.16); box-shadow: 10px 10px 0 rgba(23,33,38,.1); }
+        .frame-grid { position: absolute; inset: 0; display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr); pointer-events: none; }
+        .frame-grid i { display: flex; align-items: center; justify-content: center; overflow: hidden; min-width: 0; min-height: 0; width: 100%; height: 100%; border-right: 1px solid rgba(23,33,38,.1); border-bottom: 1px solid rgba(23,33,38,.1); }
+        .preview-caption { padding: 18px 22px 21px; }
+        .preview-caption p { margin: 0 0 15px; color: var(--muted); font-size: 12px; line-height: 1.5; }
+        .specs { display: flex; gap: 18px; color: var(--ink); font-size: 11px; }
+        .specs span { color: var(--muted); }
+        .footer { margin-top: 26px; color: var(--muted); font-size: 11px; }
+        .toast { position: fixed; right: 24px; bottom: 24px; display: none; padding: 13px 17px; color: white; background: var(--ink); border-left: 4px solid var(--orange); box-shadow: var(--shadow); font-size: 13px; }
+        .toast.visible { display: block; animation: rise .25s ease-out; }
 
-.maintenance-highlight strong {
-  color: #60a5fa;
-}
+        .frame-grid i img {width: 100%; height: 100%; object-fit: contain; display: block;}
 
+        .download-btn {
+            width: 100%;
+            margin-top: 18px;
+            justify-content: center;
+        }
 
+        .download-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+            transform: none !important;
+            background: var(--muted);
+        }
 
+        /* erase these after the maintenance */
+        .maintenance-banner {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.12), rgba(59, 130, 246, 0.10));
+            border: 1px solid rgba(245, 158, 11, 0.45);
+            border-left: 4px solid #f59e0b;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            color: #f3f4f6;
+            font-family: inherit;
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+        }
 
+        .maintenance-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.05rem;
+            color: #fbbf24;
+            margin-bottom: 8px;
+        }
 
-		/* keyframes define a custom animation */
-		/* rise is a custom name given to the animation */
-		/* move Y from 8 pixel beneath it's original position to it's original position */
-		@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-		@media (max-width: 780px) {
-			.shell { padding-top: 20px; }
-			.topbar { margin-bottom: 45px; }
-			.status { display: none; }
-			.workspace { grid-template-columns: 1fr; }
-			.preview { position: static; }
-		}
-		@media (max-width: 480px) {
-			.upload-grid { grid-template-columns: 1fr; }
-			.action-row { align-items: flex-start; flex-direction: column; }
-			.generate { width: 100%; justify-content: center; }
-		}
-	</style>
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            background-color: #f59e0b;
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 8px #f59e0b;
+            animation: pulse-dot 1.8s infinite ease-in-out;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.3);
+                opacity: 0.55;
+            }
+        }
+
+        .maintenance-body {
+            margin: 0 0 10px 0;
+            font-size: 0.94rem;
+            line-height: 1.5;
+            color: #800000;
+        }
+
+        .maintenance-highlight {
+            margin: 0;
+            padding: 10px 12px;
+            background: rgba(17, 24, 39, 0.55);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.25);
+        }
+
+        .maintenance-highlight strong {
+            color: #60a5fa;
+        }
+
+        @keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @media (max-width: 780px) {
+            .shell { padding-top: 20px; }
+            .topbar { margin-bottom: 45px; }
+            .status { display: none; }
+            .workspace { grid-template-columns: 1fr; }
+            .preview { position: static; }
+        }
+        @media (max-width: 480px) {
+            .upload-grid { grid-template-columns: 1fr; }
+            .action-row { align-items: flex-start; flex-direction: column; }
+            .generate, .poll { width: 100%; justify-content: center; }
+        }
+    </style>
 </head>
 <body>
-	<main class="shell">
-		<header class="topbar">
-			<div class="brand"><div class="brand-mark"><span>4x</span></div><div><div class="brand-name">Frameforge</div><div class="version">Spritesheet studio</div></div></div>
-			<div class="status"><span class="status-dot"></span> Ready to create</div>
-		</header>
+    <main class="shell">
+        <header class="topbar">
+            <div class="brand"><div class="brand-mark"><span>4x</span></div><div><div class="brand-name">Frameforge</div><div class="version">Spritesheet studio</div></div></div>
+            <div class="status"><span class="status-dot"></span> Ready to create</div>
+        </header>
 
-<!-- Maintenance banner-->
-<div class="maintenance-banner" role="status" aria-live="polite">
-  <div class="maintenance-header">
-    <span class="status-dot"></span>
-    <strong>Service Update &amp; Major Pipeline Upgrade in Progress</strong>
-  </div>
-  <p class="maintenance-body">
-    Sprite generation is temporarily paused while we update our backend pipeline to accommodate a recent upstream change to the cloud video/frame loader node. 
-  </p>
-  <p class="maintenance-highlight">
-    <strong>What's New:</strong> Alongside this fix, we are deploying a major <strong>AnimateDiff temporal motion module</strong> upgrade—delivering significantly smoother frame-to-frame continuity and production-ready sprite sheets. We'll be back online shortly!
-  </p>
-</div>
+        <!-- Maintenance banner-->
+        <div class="maintenance-banner" role="status" aria-live="polite">
+            <div class="maintenance-header">
+                <span class="status-dot"></span>
+                <strong>Service Update &amp; Major Pipeline Upgrade in Progress</strong>
+            </div>
+            <p class="maintenance-body">
+                Sprite generation is temporarily paused while we update our backend pipeline to accommodate a recent upstream change to the cloud video/frame loader node. 
+            </p>
+            <p class="maintenance-highlight">
+                <strong>What's New:</strong> Alongside this fix, we are deploying a major <strong>AnimateDiff temporal motion module</strong> upgrade—delivering significantly smoother frame-to-frame continuity and production-ready sprite sheets. We'll be back online shortly!
+            </p>
+        </div>
 
+        <section>
+            <section class="intro">
+                <div class="eyebrow">Motion to pixels</div>
+                <h1>Build your next<br>animated character.</h1>
+                <p>Describe the character, bring a movement reference, and Frameforge will prepare a clean, game-ready spritesheet.</p>
+            </section>
 
-		<section>
-		<section class="intro">
-			<div class="eyebrow">Motion to pixels</div>
-			<h1>Build your next<br>animated character.</h1>
-			<p>Describe the character, bring a movement reference, and Frameforge will prepare a clean, game-ready spritesheet.</p>
-		</section>
+            <section class="workspace">
+                <form class="panel controls" id="generator-form">
+                    
+                    <!-- workspace 1, character reference picture/ lora-->
+                    <div class="section-heading"><h2>Character input</h2><div class="step">01 / 03</div></div>
+                    <div class="upload-grid">
+                        <label class="upload-box" for="character-file">
+                            <div class="upload-icon">+</div><strong>Add reference image</strong><small>the effect isn't ideal<br>i'm still tuning this part workflow</small>
+                            <input id="character-file" type="file" accept="image/png,image/jpeg,image/webp">
+                        </label>
 
-		<section class="workspace">
-			<form class="panel controls" id="generator-form">
-				
-				<!-- workspace 1, character reference picture/ lora-->
-				<div class="section-heading"><h2>Character input</h2><div class="step">01 / 03</div></div>
-				<div class="upload-grid">
-					<label class="upload-box" for="character-file">
-						<div class="upload-icon">+</div><strong>Add reference image</strong><small>the effect isn't ideal<br>i'm still tuning this part workflow</small>
-						<input id="character-file" type="file" accept="image/png,image/jpeg,image/webp">
-					</label>
+                        <button class="upload-box character-picker" id="character-picker" type="button" aria-haspopup="dialog" aria-controls="character-modal">
+                            <div class="upload-icon">+</div><strong>Choose a character</strong><small>Select a saved character<br>Its LoRA stays on Comfy Cloud</small>
+                        </button>
+                    </div>
+                    <div class="file-result" id="character-result"><span>Image</span><b></b><button type="button" aria-label="Remove character image">x</button></div>
+                    <div class="file-result" id="lora-result"><span>LoRA</span><b></b><button type="button" aria-label="Remove selected character">x</button></div>
 
+                    <!-- workspace 2, prompts -->
+                    <div class="section-heading"><h2>Character direction</h2><div class="step">02 / 03</div></div>
+                    <div class="field">
+                        <label class="small-title" for="prompt">Positive prompt <span>Describe what to make</span></label>
+                        <textarea id="prompt" placeholder="1 girl, expressive eyes, side view, simple background..."></textarea>
+                    </div>
+                    <div class="field">
+                        <label class="small-title" for="negative-prompt">Negative prompt <span>Describe what to avoid</span></label>
+                        <textarea id="negative-prompt" placeholder="Blurry, extra limbs, text, watermark, cropped, inconsistent proportions..."></textarea>
+                    </div>
 
-					<!-- button is something new to me as well -->
-					<!-- what is aria? : Accessible Rich Internet Applications -->
-					<!-- i don't need to care about it too much, since the website is meant for generate "visual" asset -->
-					<button class="upload-box character-picker" id="character-picker" type="button" aria-haspopup="dialog" aria-controls="character-modal">
-						<div class="upload-icon">+</div><strong>Choose a character</strong><small>Select a saved character<br>Its LoRA stays on Comfy Cloud</small>
-					</button>
+                    <!-- workspace 3, motion reference -->
+                    <div class="section-heading motion"><h2>Movement reference</h2><div class="step">03 / 03</div></div>
+                    <label class="upload-box motion-upload" for="motion-file">
+                        <div class="upload-icon">&#9654;</div><div><strong>Upload a GIF or video</strong><small> MP4, MOV, WEBM or GIF. The motion will guide your frame timing and poses.</small></div>
+                        <input id="motion-file" type="file" accept="video/mp4,video/quicktime,video/webm,image/gif">
+                    </label>
+                    <div class="file-result" id="motion-result"><span>Motion</span><b></b><button type="button" aria-label="Remove movement file">x</button></div>
 
+                    <!-- Button 1: Enqueue Task -->
+                    <div class="action-row">
+                        <button id="enqueue-btn" class="generate" type="submit">
+                            <span>enqueue task</span>
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h13M11 5l5 5-5 5"/></svg>
+                        </button>
+                        <div class="helper">You can fine-tune frame count<br>and canvas size after generation.</div>
+                    </div>
 
-				</div>
-				<div class="file-result" id="character-result"><span>Image</span><b></b><button type="button" aria-label="Remove character image">x</button></div>
-				<div class="file-result" id="lora-result"><span>LoRA</span><b></b><button type="button" aria-label="Remove selected character">x</button></div>
+                    <!-- Button 2: Poll Status -->
+                    <div class="action-row">
+                        <button id="poll-btn" class="poll" type="button" disabled>
+                            <span>poll status</span>
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h13M11 5l5 5-5 5"/></svg>
+                        </button>
+                        <div id="job-id-display" class="helper">You can fine-tune frame count<br>and canvas size after generation.</div>
+                    </div>
+                </form>
 
+                <aside class="panel preview">
+                    <div class="preview-head"><h2>Output preview</h2><span class="badge">16 frames</span></div>
+                    <div class="preview-stage"><div class="sprite-card">
+                        <div class="frame-grid"> <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+                    <div class="preview-caption"><p>Your generated animation will appear here as a transparent PNG spritesheet.</p><div class="specs"><div><span>Layout</span><br>4 x 4 grid</div><div><span>Canvas</span><br>1024 x 1024</div><div><span>Format</span><br>PNG</div></div></div>
 
-				<!-- workspace 2, prompts -->
-				<div class="section-heading"><h2>Character direction</h2><div class="step">02 / 03</div></div>
-				<div class="field">
-					<label class="small-title" for="prompt">Positive prompt <span>Describe what to make</span></label>
-					<textarea id="prompt" placeholder="1 girl, expressive eyes, side view, simple background..."></textarea>
-				</div>
-				<div class="field">
-					<label class="small-title" for="negative-prompt">Negative prompt <span>Describe what to avoid</span></label>
-					<textarea id="negative-prompt" placeholder="Blurry, extra limbs, text, watermark, cropped, inconsistent proportions..."></textarea>
-				</div>
+                    <button id="download-all-btn" class="generate download-btn" type="button" disabled>
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 17px; height: 17px;">
+                            <path d="M10 3v10m0 0l-4-4m4 4l4-4M3 17h14"/>
+                        </svg>
+                        <span>Download All Frames</span>
+                    </button>
+                </aside>
+            </section>
+        </section>
 
+        <div class="footer">Frameforge / A focused workspace for animated game art</div>
+    </main>
+    <div class="toast" id="toast" role="status"></div>
 
-				<!-- workspace 3, motion reference -->
-				<div class="section-heading motion"><h2>Movement reference</h2><div class="step">03 / 03</div></div>
-				<label class="upload-box motion-upload" for="motion-file">
-					<div class="upload-icon">&#9654;</div><div><strong>Upload a GIF or video</strong><small> MP4, MOV, WEBM or GIF. The motion will guide your frame timing and poses.</small></div>
-					<input id="motion-file" type="file" accept="video/mp4,video/quicktime,video/webm,image/gif">
-				</label>
-				<div class="file-result" id="motion-result"><span>Motion</span><b></b><button type="button" aria-label="Remove movement file">x</button></div>
+    <div class="modal-backdrop" id="character-modal" role="dialog" aria-modal="true" aria-labelledby="character-modal-title">
+        <section class="character-modal">
+            <div class="modal-header"><div><h2 id="character-modal-title">Choose a character</h2><p>Pick a character already connected to your Comfy Cloud library.</p></div><button class="modal-close" id="close-character-modal" type="button" aria-label="Close character picker">&times;</button></div>
+            <div class="character-list" id="character-list"><div class="modal-state">Loading your characters...</div></div>
+        </section>
+    </div>
 
-				<div class="action-row">
-					<button class="generate" type="submit"><span>Generate spritesheet</span><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 10h13M11 5l5 5-5 5"/></svg></button>
-					<div class="helper">You can fine-tune frame count<br>and canvas size after generation.</div>
-				</div>
-			</form>
+    <script>
+        const API_BASE_URL = 'https://dwybuisa1bwwg.cloudfront.net';
+        let selectedCharacter = null;
 
-			<aside class="panel preview">
-				<div class="preview-head"><h2>Output preview</h2><span class="badge">16 frames</span></div>
-				<div class="preview-stage"><div class="sprite-card">
-					<!-- <div class="sprite-art"></div> -->
-					<div class="frame-grid"> <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
-				<div class="preview-caption"><p>Your generated animation will appear here as a transparent PNG spritesheet.</p><div class="specs"><div><span>Layout</span><br>4 x 4 grid</div><div><span>Canvas</span><br>1024 x 1024</div><div><span>Format</span><br>PNG</div></div></div>
+        const toast = document.getElementById('toast');
+        let toastTimer;
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('visible');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
+        }
 
-				<!-- new added download-all button -->
-				<button id="download-all-btn" class="generate download-btn" type="button" disabled>
-    				<svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" style="width: 17px; height: 17px;">
-        				<path d="M10 3v10m0 0l-4-4m4 4l4-4M3 17h14"/>
-    				</svg>
-    				<span>Download All Frames</span>
-				</button>
+        function connectFileInput(inputId, resultId) {
+            const input = document.getElementById(inputId);
+            const result = document.getElementById(resultId);
+            const name = result.querySelector('b');
 
-			</aside>
-		</section>
+            input.addEventListener('change', () => {
+                if (!input.files.length) return;
+                name.textContent = input.files[0].name;
+                result.classList.add('visible');
+            });
 
-		</section>
+            result.querySelector('button').addEventListener('click', () => {
+                input.value = '';
+                result.classList.remove('visible');
+            });
 
-		
-		<div class="footer">Frameforge / A focused workspace for animated game art</div>
-	</main>
-	<div class="toast" id="toast" role="status"></div>
+            const label = input.closest('label');
+            ['dragenter', 'dragover'].forEach(eventName => label.addEventListener(eventName, event => { event.preventDefault(); label.classList.add('dragging'); }));
+            ['dragleave', 'drop'].forEach(eventName => label.addEventListener(eventName, event => { event.preventDefault(); label.classList.remove('dragging'); }));
+            label.addEventListener('drop', event => {
+                if (!event.dataTransfer.files.length) return;
+                input.files = event.dataTransfer.files;
+                input.dispatchEvent(new Event('change'));
+            });
+        }
+        connectFileInput('character-file', 'character-result');
+        connectFileInput('motion-file', 'motion-result');
 
+        const characterModal = document.getElementById('character-modal');
+        const characterList = document.getElementById('character-list');
+        const positivePrompt = document.getElementById('prompt');
+        const loraResult = document.getElementById('lora-result');
+        let insertedTriggerWord = '';
 
-	<!-- modal here doesn't refer to the lora model, instead, it's a terminology in webdesign and user interface -->
-	<!-- just like toast refers to pop-up notifications -->
-	<!-- a modal window is an overlay dialog box that temporarily takes over the screen ant block the interaction with the page behind it until i dismiss it or complete an action -->
-	<!-- in short, it's a toast that user need to interact with -->
-	<!-- aria related stuff showed up in modal and button -->
+        function characterInitials(character) {
+            return (character.name || character.display_name || '?').split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
+        }
 
-	<!-- clunky naming for id, but i can't do better -->
-	<div class="modal-backdrop" id="character-modal" role="dialog" aria-modal="true" aria-labelledby="character-modal-title">
-		<section class="character-modal">
-			<div class="modal-header"><div><h2 id="character-modal-title">Choose a character</h2><p>Pick a character already connected to your Comfy Cloud library.</p></div><button class="modal-close" id="close-character-modal" type="button" aria-label="Close character picker">&times;</button></div>
-			<div class="character-list" id="character-list"><div class="modal-state">Loading your characters...</div></div>
-		</section>
-	</div>
+        function renderCharacters(characters) {
+            if (!characters.length) {
+                characterList.innerHTML = '<div class="modal-state">No characters are available in your library yet.</div>';
+                return;
+            }
 
+            characterList.innerHTML = characters.map((character, index) => {
+                const name = character.name || character.display_name || `Character ${index + 1}`;
+                const id = character.id ?? character.character_id ?? name;
+                return `<button class="character-option" type="button" data-character-id="${encodeURIComponent(id)}"><span class="character-avatar">${characterInitials(character)}</span><span><strong>${name}</strong><small>${character.lora_filename || 'Comfy Cloud character'}</small></span></button>`;
+            }).join('');
 
+            characterList.querySelectorAll('.character-option').forEach((option, index) => {
+                option.addEventListener('click', () => chooseCharacter(characters[index]));
+            });
+        }
 
-	<script>
+        async function loadCharacters() {
+            characterList.innerHTML = '<div class="modal-state">Loading your characters...</div>';
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/characters`);
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                const data = await response.json();
+                renderCharacters(Array.isArray(data) ? data : (data.characters || []));
+            } catch (error) {
+                characterList.innerHTML = '<div class="modal-state error">Could not load characters. Check the backend connection and try again.</div>';
+                console.error('Character lookup failed:', error);
+            }
+        }
 
-		// where my backend server is running
-		// const API_BASE_URL = 'http://18.216.189.165:8000';
-		const API_BASE_URL = 'https://dwybuisa1bwwg.cloudfront.net';
-		let selectedCharacter = null;
-		// toast has the reference to the document object who has an id of toast
-		const toast = document.getElementById('toast');
-		// declare variable
-		let toastTimer;
-		// show notification message for 3.2 seconds, then invisible it
-		function showToast(message) {
-			toast.textContent = message;
-			toast.classList.add('visible');
-			clearTimeout(toastTimer);
-			toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
-		}
+        async function chooseCharacter(character) {
+            const characterId = character.id ?? character.character_id ?? character.name;
+            try {
+                let details = character;
+                if (!character.trigger_word || !character.lora_filename) {
+                    const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterId)}`);
+                    if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                    details = await response.json();
+                }
+                
+                details = details.character || details;
+                if (!details.trigger_word || !details.lora_filename) throw new Error('Character metadata is incomplete');
 
+                selectedCharacter = { id: characterId, name: details.name || character.name, trigger_word: details.trigger_word, lora_filename: details.lora_filename };
+                const triggerWord = selectedCharacter.trigger_word;
+                if (insertedTriggerWord && positivePrompt.value.startsWith(`${insertedTriggerWord}, `)) positivePrompt.value = positivePrompt.value.slice(insertedTriggerWord.length + 2);
+                if (!positivePrompt.value.includes(triggerWord)) positivePrompt.value = `${triggerWord}, ${positivePrompt.value}`.replace(/, $/, '');
+                insertedTriggerWord = triggerWord;
 
-		// file input visual effects and drag-and-drop support
-		// mostly just visual effects, when send the http request, we grab the file from the input element
-		function connectFileInput(inputId, resultId) {
-			// character-file input element
-			const input = document.getElementById(inputId);
-			// character-result div element
-			const result = document.getElementById(resultId);
-			// first bold element in character-result div element
-			const name = result.querySelector('b');
-			// element.addEventListener(event, function, useCaptureOrOptions);
-			// call function when event happens
-			// when there's a input file, apply style to the result div and show the file name in the bold element
-			input.addEventListener('change', () => {
-				if (!input.files.length) return;
-				name.textContent = input.files[0].name;
-				// make file result visible
-				result.classList.add('visible');
-			});
-			// result div has a button element, when the button is clicked, clear the input file and remove the style from the result div
-			result.querySelector('button').addEventListener('click', () => {
-				input.value = '';
-				result.classList.remove('visible');
-			});
-			// parent element label of input element
-			const label = input.closest('label');
+                loraResult.querySelector('b').textContent = selectedCharacter.lora_filename;
+                loraResult.classList.add('visible');
+                characterModal.classList.remove('visible');
+                showToast(`${selectedCharacter.name || 'Character'} selected.`);
+            } catch (error) {
+                showToast('Could not load character details.');
+                console.error('Character metadata lookup failed:', error);
+            }
+        }
 
-			// no need to worry about this part
-			// apply style to the label element when the user drags a file over it, and remove the style when the user drags a file out of it or drops a file on it
-			// the parameter of the inline function is a event object, 
-			// eventName here is type/name of the event that will trigger the inline function, event is the reference to the event object that triggered the inline funciton 
-			['dragenter', 'dragover'].forEach(eventName => label.addEventListener(eventName, event => { event.preventDefault(); label.classList.add('dragging'); }));
-			['dragleave', 'drop'].forEach(eventName => label.addEventListener(eventName, event => { event.preventDefault(); label.classList.remove('dragging'); }));
-			label.addEventListener('drop', event => {
-				if (!event.dataTransfer.files.length) return;
-				input.files = event.dataTransfer.files;
-				// label giving off event
-				input.dispatchEvent(new Event('change'));
-			});
-		}
-		connectFileInput('character-file', 'character-result');
-		connectFileInput('motion-file', 'motion-result');
+        document.getElementById('character-picker').addEventListener('click', () => {
+            characterModal.classList.add('visible');
+            loadCharacters();
+        });
+        document.getElementById('close-character-modal').addEventListener('click', () => characterModal.classList.remove('visible'));
+        characterModal.addEventListener('click', event => { if (event.target === characterModal) characterModal.classList.remove('visible'); });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') characterModal.classList.remove('visible'); });
+        document.querySelector('#lora-result button').addEventListener('click', () => {
+            if (insertedTriggerWord && positivePrompt.value.startsWith(`${insertedTriggerWord}, `)) positivePrompt.value = positivePrompt.value.slice(insertedTriggerWord.length + 2);
+            insertedTriggerWord = '';
+            selectedCharacter = null;
+            loraResult.classList.remove('visible');
+        });
 
+        const downloadBtn = document.getElementById('download-all-btn');
+        let activeImageUrls = [];
 
-		// it's actually the modal dropback div
-		const characterModal = document.getElementById('character-modal');
-		// the blank area in the modal that i will fill up with character preview pictures later
-		const characterList = document.getElementById('character-list');
-		const positivePrompt = document.getElementById('prompt');
-		// result display below the upload grid
-		const loraResult = document.getElementById('lora-result');
-		let insertedTriggerWord = '';
+        const enqueueBtn = document.getElementById('enqueue-btn');
+        const pollBtn = document.getElementById('poll-btn');
+        const jobDisplay = document.getElementById('job-id-display');
 
-		// i think i won't need it, i need the full name of the characters all time
-		function characterInitials(character) {
-			return (character.name || character.display_name || '?').split(/\s+/).slice(0, 2).map(word => word[0]).join('').toUpperCase();
-		}
+        // ==========================================
+        // BUTTON 1: ENQUEUE TASK (Form Submit)
+        // ==========================================
+        document.getElementById('generator-form').addEventListener('submit', async event => {
+            event.preventDefault();
 
-		// characters is a collection of character objects, each character object has a name, id, trigger_word, lora_filename and other properties
-		function renderCharacters(characters) {
-			// no character
-			if (!characters.length) {
-				// replace the innerHTML with this
-				characterList.innerHTML = '<div class="modal-state">No characters are available in your library yet.</div>';
-				return;
-			}
+            // 1. Collect inputs
+            const prompt = document.getElementById('prompt').value.trim();
+            const negativePrompt = document.getElementById('negative-prompt').value.trim();
+            const charFile = document.getElementById('character-file').files[0];
+            const motionFile = document.getElementById('motion-file').files[0];
 
-			// fill the blank area with character preview
-			// map convert an array to another array
-			// join convert array to string seperated by it's parameter
-			characterList.innerHTML = characters.map((character, index) => {
-				const name = character.name || character.display_name || `Character ${index + 1}`;
-				const id = character.id ?? character.character_id ?? name;
-				// encodeURIComponent(id) makes string safe to use inside URL and HTML
-				// backticks are template literals
-				// if i want to tweak the character select buttons, i should do it here
-				return `<button class="character-option" type="button" data-character-id="${encodeURIComponent(id)}"><span class="character-avatar">${characterInitials(character)}</span><span><strong>${name}</strong><small>${character.lora_filename || 'Comfy Cloud character'}</small></span></button>`;
-			}).join('');
+            // 2. Validate positive prompt
+            if (!prompt) {
+                showToast('Add a positive prompt to start your spritesheet.');
+                document.getElementById('prompt').focus();
+                return;
+            }
 
-			// add click event listener for each option
-			characterList.querySelectorAll('.character-option').forEach((option, index) => {
-				// click will trigger the chooseCharacter function and pass the character object to it
-				option.addEventListener('click', () => chooseCharacter(characters[index]));
-			});
-		}
+            // 3. Pack FormData
+            const payload = new FormData();
+            payload.append('prompt', prompt);
+            payload.append('negative_prompt', negativePrompt);
+            if (charFile) payload.append('character_image', charFile);
+            if (selectedCharacter) {
+                payload.append('character_id', selectedCharacter.id);
+                payload.append('trigger_word', selectedCharacter.trigger_word);
+                payload.append('lora_filename', selectedCharacter.lora_filename);
+            }
+            if (motionFile) payload.append('motion_video', motionFile);
 
-		// send http request to the backend to get the character list, then call renderCharacters to fill the blank area with character preview
-		// will mainly work on this later
-		async function loadCharacters() {
-			characterList.innerHTML = '<div class="modal-state">Loading your characters...</div>';
-			try {
-				// my backend pathoperation function should return an array of character objects, each character object has a name, id, trigger_word, lora_filename and other properties
-				const response = await fetch(`${API_BASE_URL}/api/characters`);
-				if (!response.ok) throw new Error(`Server returned ${response.status}`);
-				const data = await response.json();
-				// we expect the data to be an array of character objects, but if it's not, we try to get the characters property from it
-				renderCharacters(Array.isArray(data) ? data : (data.characters || []));
-			} catch (error) {
-				characterList.innerHTML = '<div class="modal-state error">Could not load characters. Check the backend connection and try again.</div>';
-				console.error('Character lookup failed:', error);
-			}
-		}
+            showToast('Uploading assets and enqueuing job...');
+            enqueueBtn.disabled = true;
 
-		// take a character object
-		// it supposed to close the modal and update the positive prompt with the trigger word of the selected character
-		async function chooseCharacter(character) {
-			const characterId = character.id ?? character.character_id ?? character.name;
-			try {
-				let details = character;
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/generate`, {
+                    method: 'POST',
+                    body: payload
+                });
 
-				// i wonder if this is necessary
-				if (!character.trigger_word || !character.lora_filename) {
-					const response = await fetch(`${API_BASE_URL}/api/characters/${encodeURIComponent(characterId)}`);
-					if (!response.ok) throw new Error(`Server returned ${response.status}`);
-					details = await response.json();
-				}
-				
-				details = details.character || details;
-				if (!details.trigger_word || !details.lora_filename) throw new Error('Character metadata is incomplete');
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-				// start from here, is the weight lifting part
-				selectedCharacter = { id: characterId, name: details.name || character.name, trigger_word: details.trigger_word, lora_filename: details.lora_filename };
-				const triggerWord = selectedCharacter.trigger_word;
-				// if there's a existing trigger word in the positive prompt, remove it first, then add the new trigger word to the front of the positive prompt
-				if (insertedTriggerWord && positivePrompt.value.startsWith(`${insertedTriggerWord}, `)) positivePrompt.value = positivePrompt.value.slice(insertedTriggerWord.length + 2);
-				// change the positive prompt value if promt don't include trigger word, replace the /, / at the very end of the string
-				if (!positivePrompt.value.includes(triggerWord)) positivePrompt.value = `${triggerWord}, ${positivePrompt.value}`.replace(/, $/, '');
-				insertedTriggerWord = triggerWord;
+                const result = await response.json();
+                console.log('Enqueue Result:', result);
 
-				loraResult.querySelector('b').textContent = selectedCharacter.lora_filename;
-				loraResult.classList.add('visible');
-				// modal vanish
-				characterModal.classList.remove('visible');
-				showToast(`${selectedCharacter.name || 'Character'} selected.`);
-			} catch (error) {
-				showToast('Could not load character details.');
-				console.error('Character metadata lookup failed:', error);
-			}
-		}
+                // Backend returns: { status: "queued", job_id: "...", message: "..." }
+                if (result.status === "queued" && result.job_id) {
+                    // Replace helper text with the returned job_id
+                    jobDisplay.textContent = result.job_id;
+                    jobDisplay.dataset.jobId = result.job_id;
 
-		// the button in the upload grid that will open the modal
-		document.getElementById('character-picker').addEventListener('click', () => {
-			characterModal.classList.add('visible');
-			loadCharacters();
-		});
-		document.getElementById('close-character-modal').addEventListener('click', () => characterModal.classList.remove('visible'));
-		// if click on dimming backdrop, close the modal
-		characterModal.addEventListener('click', event => { if (event.target === characterModal) characterModal.classList.remove('visible'); });
-		document.addEventListener('keydown', event => { if (event.key === 'Escape') characterModal.classList.remove('visible'); });
-		document.querySelector('#lora-result button').addEventListener('click', () => {
-			if (insertedTriggerWord && positivePrompt.value.startsWith(`${insertedTriggerWord}, `)) positivePrompt.value = positivePrompt.value.slice(insertedTriggerWord.length + 2);
-			insertedTriggerWord = '';
-			selectedCharacter = null;
-			loraResult.classList.remove('visible');
-		});
+                    // Enable the poll button
+                    pollBtn.disabled = false;
+                    showToast('Job queued! Click "poll status" to check progress.');
+                }
 
-		const downloadBtn = document.getElementById('download-all-btn');
-		let activeImageUrls = [];
+            } catch (err) {
+                showToast('Failed to enqueue job. Check server connection.');
+                console.error(err);
+            } finally {
+                enqueueBtn.disabled = false;
+            }
+        });
 
-		document.getElementById('generator-form').addEventListener('submit', async event => {
-		    //by default, when a form is submitted, the page will reload. We don't want that to happen, so we prevent the default behavior of the form submission.
-			event.preventDefault();
+        // ==========================================
+        // BUTTON 2: POLL STATUS (Button Click)
+        // ==========================================
+        pollBtn.addEventListener('click', async () => {
+            // Read the job_id straight from the #job-id-display element
+            const jobId = jobDisplay.dataset.jobId || jobDisplay.textContent.trim();
 
-			// 1. Collect the prompt, negative prompt, and any uploaded files from the form
-			const prompt = document.getElementById('prompt').value.trim();
-			const negativePrompt = document.getElementById('negative-prompt').value.trim();
-			const charFile = document.getElementById('character-file').files[0];
-			const motionFile = document.getElementById('motion-file').files[0];
+            if (!jobId || jobId.includes('fine-tune')) {
+                showToast('No active job to poll. Enqueue a task first!');
+                return;
+            }
 
-			// 2. Validate that the positive prompt is provided
-			if (!prompt) {
-				showToast('Add a positive prompt to start your spritesheet.');
-				document.getElementById('prompt').focus();
-				return;
-			}
+            showToast('Checking job status...');
 
-			// Pack all text and files into a FormData container
-			const payload = new FormData();
-			payload.append('prompt', prompt);
-			payload.append('negative_prompt', negativePrompt);
-			if (charFile) payload.append('character_image', charFile);
-			if (selectedCharacter) {
-				// i don't have to append the trigger_word, but i adhere copilot, he's the expert, he knows what he's doing 
-				// could do some trimming here
-				payload.append('character_id', selectedCharacter.id);
-				payload.append('trigger_word', selectedCharacter.trigger_word);
-				payload.append('lora_filename', selectedCharacter.lora_filename);
-			}
-			if (motionFile) payload.append('motion_video', motionFile);
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/jobs/${jobId}`, {
+                    method: 'GET'
+                });
 
-			showToast('Uploading assets and generating spritesheet...');
+                if (!response.ok) throw new Error(`Server returned ${response.status}`);
 
-			try {
-				// Note: Do NOT manually set a "Content-Type" header when using FormData;
-				// the browser automatically sets multipart boundaries.
-				// response get returned once server get the http request
-				// pause work on front end here, after the server give back the response, need to change visual effect of panel preview, need to parse the returned jason file to get each individual picture
-				// to send data to a server, we also need to pass a optional configuration object to the fetch function
-				// the optional configuration object is just instructions for browser how to assemble the http message
-				// we are sending a FormData object here as a request body, it's not a JSON object, we can't use pydantic model to validate it
-				showToast('connection okay');
-				// fetch send a http request
-				// return the envelope of the http response
-				const response = await fetch(`${API_BASE_URL}/api/generate`, {
-					method: 'POST',
-					body: payload
-				});
+                const job = await response.json();
+                console.log('Poll Result:', job);
 
-				if (!response.ok) throw new Error(`Server returned ${response.status}`);
+                // Case 1: Still running in background thread
+                if (job.status === "processing") {
+                    showToast('Still generating... try polling again in a few seconds.');
+                } 
+                // Case 2: Finished!
+                else if (job.status === "completed" && job.image_urls) {
+                    activeImageUrls = job.image_urls;
+                    downloadBtn.disabled = false;
 
-				// result is a sequence of pictures, so return a json file include many picture link
-				// take out the response body
-				const result = await response.json();
-				
-				//learn it on 9/17
-				// 1. In your generator-form submit handler, update the success branch:
-				if (result.status === "good" && result.image_urls) {
-				    activeImageUrls = result.image_urls;
-				    downloadBtn.disabled = false; // Enable the button
+                    const frameSlots = document.querySelectorAll('.frame-grid i');
+                    job.image_urls.forEach((url, index) => {
+                        if (frameSlots[index]) {
+                            frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
+                        }
+                    });
 
-				    const frameSlots = document.querySelectorAll('.frame-grid i');
-				    result.image_urls.forEach((url, index) => {
-				        if (frameSlots[index]) {
-				            frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
-				        }
-				    });
-				}
+                    showToast('Spritesheet ready!');
+                } 
+                // Case 3: Background task threw an exception
+                else if (job.status === "failed") {
+                    showToast(`Generation failed: ${job.error || 'Unknown error'}`);
+                }
 
-				// response body is in good status
-				//if (result.status === "good" && result.image_urls) {
-  					// Grab all <i> slots inside .frame-grid
-  					//const frameSlots = document.querySelectorAll('.frame-grid i');
+            } catch (err) {
+                showToast('Error checking job status.');
+                console.error(err);
+            }
+        });
 
-  					//result.image_urls.forEach((url, index) => {
-    					// Ensure the slot exists to prevent index-out-of-bounds errors
-    					//if (frameSlots[index]) {
-							// i should apply some style to the image
-      						//frameSlots[index].innerHTML = `<img src="${url}" alt="Frame ${index + 1}" />`;
-    					//}
-  					//});
-				//}
+        downloadBtn.addEventListener('click', async () => {
+            if (!activeImageUrls.length) return;
 
+            downloadBtn.disabled = true;
+            showToast(`Downloading ${activeImageUrls.length} frames...`);
 
-				showToast('Spritesheet ready!');
+            for (let i = 0; i < activeImageUrls.length; i++) {
+                try {
+                    const res = await fetch(activeImageUrls[i]);
+                    const blob = await res.blob();
+                    const blobUrl = URL.createObjectURL(blob);
 
-				console.log('Result:', result);
-			} catch (err) {
-				showToast('Generation failed. Check server connection.');
-				console.error(err);
-			}
-		});
+                    const anchor = document.createElement('a');
+                    anchor.href = blobUrl;
+                    anchor.download = `frame_${String(i + 1).padStart(2, '0')}.png`;
+                    document.body.appendChild(anchor);
+                    anchor.click();
+                    document.body.removeChild(anchor);
 
-		// learn it on 9/17
-		downloadBtn.addEventListener('click', async () => {
-		    if (!activeImageUrls.length) return;
+                    URL.revokeObjectURL(blobUrl);
 
-		    downloadBtn.disabled = true;
-		    showToast(`Downloading ${activeImageUrls.length} frames...`);
+                    await new Promise(resolve => setTimeout(resolve, 200));
+                } catch (err) {
+                    console.error(`Failed to download frame ${i + 1}:`, err);
+                }
+            }
 
-		    for (let i = 0; i < activeImageUrls.length; i++) {
-		        try {
-		            const res = await fetch(activeImageUrls[i]);
-		            const blob = await res.blob();
-		            const blobUrl = URL.createObjectURL(blob);
-
-		            const anchor = document.createElement('a');
-		            anchor.href = blobUrl;
-		            anchor.download = `frame_${String(i + 1).padStart(2, '0')}.png`;
-		            document.body.appendChild(anchor);
-		            anchor.click();
-		            document.body.removeChild(anchor);
-
-		            URL.revokeObjectURL(blobUrl);
-
-		            // 200ms throttle to prevent browser download-blocking popups
-		            await new Promise(resolve => setTimeout(resolve, 200));
-		        } catch (err) {
-		            console.error(`Failed to download frame ${i + 1}:`, err);
-		        }
-		    }
-
-		    downloadBtn.disabled = false;
-		    showToast('Download complete!');
-		});
-	</script>
+            downloadBtn.disabled = false;
+            showToast('Download complete!');
+        });
+    </script>
 </body>
 </html>
